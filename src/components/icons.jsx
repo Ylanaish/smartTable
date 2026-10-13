@@ -19,10 +19,12 @@ function Svg({ children, className = "h-5 w-5", viewBox = "0 0 24 24" }) {
   );
 }
 
-export function CloseIcon(props) {
+export function HomeIcon(props) {
   return (
     <Svg {...props}>
-      <path d="M6 6l12 12M18 6L6 18" />
+      <path d="M3.5 10.4l8.5-6.9 8.5 6.9" />
+      <path d="M5.8 9v10.5a.5.5 0 00.5.5h11.4a.5.5 0 00.5-.5V9" />
+      <path d="M9.8 20v-5.2h4.4V20" />
     </Svg>
   );
 }

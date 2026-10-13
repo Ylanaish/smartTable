@@ -36,7 +36,7 @@ function App() {
   return (
     <OrderProvider>
       <HistoryProvider>
-        <RouterProvider router={router} basename="/smartTable"/>
+        <RouterProvider router={router} />
       </HistoryProvider>
     </OrderProvider>
   );

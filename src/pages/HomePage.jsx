@@ -51,7 +51,7 @@ export default function HomePage() {
 
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-[520px] flex-col bg-ink text-white">
-      <AppHeader theme="light" onClose={() => navigate("/intro")} />
+      <AppHeader theme="light" />
 
       <main className="flex flex-1 flex-col px-4 pb-8 sm:px-6">
         <h1 className="mt-6 text-center font-display text-[clamp(26px,7.5vw,34px)] leading-[1.15] font-medium">

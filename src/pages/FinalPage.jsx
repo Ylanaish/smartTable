@@ -24,7 +24,7 @@ export default function FinalPage() {
       <div className="absolute inset-0 -z-20 bg-black/35" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/30 to-black/85" />
 
-      <AppHeader theme="light" onClose={handleHome} />
+      <AppHeader theme="light" />
 
       <main className="relative flex flex-1 flex-col items-center px-6 pt-[14vh] pb-6 text-center sm:pt-[18vh]">
         <h1 className="max-w-[320px] font-display text-[clamp(28px,8.5vw,40px)] leading-[1.15] font-medium text-white drop-shadow-lg">

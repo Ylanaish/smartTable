@@ -1,29 +1,23 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTelegram } from "../hooks/useTelegram";
-import { CloseIcon, DotsIcon } from "./icons";
+import { DotsIcon, HomeIcon } from "./icons";
 
 export default function AppHeader({
   title = "Умный Стол",
   subtitle = "мини-приложение",
   theme = "dark",
-  onClose,
-  fallbackPath = "/home",
 }) {
   const navigate = useNavigate();
   const telegram = useTelegram();
+  const { pathname } = useLocation();
   const isLight = theme === "light";
 
-  const handleClose = () => {
+  // На самой главной иконка ведёт бы сама на себя — там оставляем пустой слот.
+  const showHome = pathname !== "/home";
+
+  const goHome = () => {
     telegram.haptic("light");
-    if (onClose) {
-      onClose();
-      return;
-    }
-    if (telegram.canClose()) {
-      telegram.close();
-      return;
-    }
-    navigate(fallbackPath);
+    navigate("/home");
   };
 
   const iconButton = [
@@ -38,9 +32,14 @@ export default function AppHeader({
         isLight ? "text-white" : "text-ink",
       ].join(" ")}
     >
-      <button type="button" onClick={handleClose} aria-label="Закрыть" className={iconButton}>
-        <CloseIcon className="h-[22px] w-[22px]" />
-      </button>
+      {showHome ? (
+        <button type="button" onClick={goHome} aria-label="На главную" className={iconButton}>
+          <HomeIcon className="h-[22px] w-[22px]" />
+        </button>
+      ) : (
+        // Плейсхолдер нужен, иначе justify-between прижмёт кнопку меню влево.
+        <span className="h-9 w-9" aria-hidden="true" />
+      )}
 
       <div className="pointer-events-none absolute inset-x-16 top-1/2 -translate-y-1/2 text-center">
         <p

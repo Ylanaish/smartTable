@@ -7,7 +7,6 @@ export default function PageShell({
   headerTitle = "Умный Стол",
   headerSubtitle = "мини-приложение",
   theme = "dark",
-  headerClose,
   footer = null,
   contentClassName = "",
 }) {
@@ -17,12 +16,7 @@ export default function PageShell({
 
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-[520px] flex-col bg-canvas">
-      <AppHeader
-        title={headerTitle}
-        subtitle={headerSubtitle}
-        theme={theme}
-        onClose={headerClose}
-      />
+      <AppHeader title={headerTitle} subtitle={headerSubtitle} theme={theme} />
 
       <main className={`flex-1 overscroll-contain px-4 pb-6 sm:px-6 ${contentClassName}`}>
         {children}
