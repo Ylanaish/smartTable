@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import OrderProvider from "./store/OrderProvider";
 import HistoryProvider from "./store/HistoryProvider";
 import IntroPage from "./pages/IntroPage";
@@ -15,7 +15,9 @@ import CatalogPage from "./pages/CatalogPage";
 import FinalPage from "./pages/FinalPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-const router = createBrowserRouter([
+// HashRouter: GitHub Pages не умеет отдавать index.html на вложенные пути,
+// поэтому весь маршрут держим в хеше — сервер его никогда не видит.
+const router = createHashRouter([
   { path: "/", element: <Navigate to="/intro" replace /> },
   { path: "/intro", element: <IntroPage /> },
   { path: "/home", element: <HomePage /> },
