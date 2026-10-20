@@ -23,6 +23,7 @@ export function createOrderSnapshot(order, now = new Date()) {
     guests: order.guests,
     purpose: order.purpose,
     address: order.address,
+    comment: order.comment ?? "",
     styleName: style?.name ?? "",
     formatName: format?.name ?? "",
     formatId: order.formatId,

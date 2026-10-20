@@ -57,6 +57,17 @@ export default function TrackingPanel({ order }) {
         </div>
       </div>
 
+      {order.comment && (
+        <div className="mt-4 rounded-card border border-line bg-card px-4 py-4">
+          <h2 className="mb-2 text-[13px] font-semibold tracking-[-0.01em] text-ink">
+            Комментарий к заказу
+          </h2>
+          <p className="text-[13px] leading-relaxed whitespace-pre-line text-ink/85">
+            {order.comment}
+          </p>
+        </div>
+      )}
+
       {order.dishes?.length > 0 && (
         <div className="mt-4 rounded-card border border-line bg-card px-4 py-4">
           <h2 className="mb-3 text-[13px] font-semibold tracking-[-0.01em] text-ink">

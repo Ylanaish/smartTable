@@ -8,6 +8,7 @@ import GuestCounter from "../components/GuestCounter";
 import AddressInput from "../components/AddressInput";
 import Button from "../components/Button";
 import { STEPS } from "../data/catalog";
+import { MIN_GUESTS } from "../store/OrderProvider";
 import { useOrder } from "../hooks/useOrder";
 
 function Field({ label, children }) {
@@ -60,11 +61,25 @@ export default function EventSettingsPage() {
         </Field>
 
         <Field label="Количество гостей">
-          <GuestCounter value={order.guests} onChange={setField("guests")} />
+          <div className="flex items-center gap-3">
+            <GuestCounter value={order.guests} onChange={setField("guests")} min={MIN_GUESTS} />
+            <span className="text-[12.5px] text-muted">минимум {MIN_GUESTS} гостей</span>
+          </div>
         </Field>
 
         <Field label="Адрес доставки">
           <AddressInput value={order.address} onChange={setField("address")} />
+        </Field>
+
+        <Field label="Комментарий к заказу">
+          <textarea
+            value={order.comment}
+            onChange={(event) => setField("comment")(event.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="Особенности: аллергии, детское меню, время звонка…"
+            className="w-full resize-none rounded-xl border border-line bg-card px-3.5 py-2.5 text-[14px] leading-snug text-ink outline-none transition-colors placeholder:text-muted/80 focus:border-ink/35"
+          />
         </Field>
       </div>
     </PageShell>

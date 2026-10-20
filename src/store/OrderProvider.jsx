@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useReducer } from "react";
 import { OrderContext, STORAGE_KEY, initialOrder, orderReducer } from "./orderReducer";
 
+export const MIN_GUESTS = 5;
+
 function loadOrder() {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return initialOrder;
 
     const parsed = JSON.parse(raw);
-    return { ...initialOrder, ...parsed, dishes: parsed.dishes ?? {} };
+    // Черновик мог сохраниться до введения минимума в 5 гостей.
+    return {
+      ...initialOrder,
+      ...parsed,
+      guests: Math.max(MIN_GUESTS, parsed.guests ?? initialOrder.guests),
+      dishes: parsed.dishes ?? {},
+    };
   } catch {
     return initialOrder;
   }

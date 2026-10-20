@@ -16,6 +16,7 @@ export const initialOrder = {
   time: "18:00",
   guests: 10,
   address: "",
+  comment: "",
   styleId: "loft",
   dishes: { "salad-caesar": 2, "meat-birds": 2, cardinale: 2, bruschetta: 2, tiramisu: 1 },
   satietyMode: "perPerson",
