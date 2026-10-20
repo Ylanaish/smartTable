@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPinIcon } from "./icons";
+import { useTelegram } from "../hooks/useTelegram";
 
-// shortcut: Nominatim без ключа, лимит ~1 запрос/сек. При росте нагрузки — свой прокси/кеш.
-const SUGGEST_URL = "https://nominatim.openstreetmap.org/search";
+// Запросы идут в наш бэкенд: ключ Dadata живёт на сервере, в бандл не попадает.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_MS = 350;
 
 export default function AddressInput({ value, onChange }) {
+  const telegram = useTelegram();
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -26,20 +28,24 @@ export default function AddressInput({ value, onChange }) {
 
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      const params = new URLSearchParams({
-        q: query,
-        format: "jsonv2",
-        limit: "5",
-        "accept-language": "ru",
-      });
+      const params = new URLSearchParams({ q: query });
+      const headers = {};
+      // rbacx пускает только по подписи Telegram initData.
+      if (telegram.webApp?.initData) {
+        headers["X-Telegram-Init-Data"] = telegram.webApp.initData;
+      }
 
-      fetch(`${SUGGEST_URL}?${params}`, { signal: controller.signal })
-        .then((response) => (response.ok ? response.json() : []))
+      fetch(`${API_BASE_URL}/address/suggest?${params}`, {
+        headers,
+        signal: controller.signal,
+      })
+        .then((response) => (response.ok ? response.json() : { suggestions: [] }))
         .then((data) => {
-          setSuggestions(data);
-          setOpen(data.length > 0);
+          const items = data.suggestions ?? [];
+          setSuggestions(items);
+          setOpen(items.length > 0);
         })
-        // Сеть недоступна — молча оставляем поле обычным текстовым вводом.
+        // Бэкенд или Dadata недоступны — молча оставляем обычный текстовый ввод.
         .catch(() => {});
     }, DEBOUNCE_MS);
 
@@ -47,7 +53,7 @@ export default function AddressInput({ value, onChange }) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [value]);
+  }, [value, telegram.webApp]);
 
   useEffect(() => {
     const closeOnOutsideClick = (event) => {
@@ -58,7 +64,7 @@ export default function AddressInput({ value, onChange }) {
   }, []);
 
   const select = (item) => {
-    onChange(item.display_name);
+    onChange(item.value);
     setSuggestions([]);
     setOpen(false);
   };
@@ -85,7 +91,7 @@ export default function AddressInput({ value, onChange }) {
           className="absolute inset-x-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded-xl border border-line bg-card py-1 shadow-[0_8px_24px_rgba(16,22,20,0.12)]"
         >
           {suggestions.map((item) => (
-            <li key={item.place_id}>
+            <li key={item.unrestricted_value ?? item.value}>
               <button
                 type="button"
                 role="option"
@@ -93,7 +99,7 @@ export default function AddressInput({ value, onChange }) {
                 onClick={() => select(item)}
                 className="block w-full px-3.5 py-2.5 text-left text-[13px] leading-snug text-ink/85 transition-colors hover:bg-canvas active:bg-line/60"
               >
-                {item.display_name}
+                {item.label}
               </button>
             </li>
           ))}
