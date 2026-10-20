@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Одноразовые скрипты проверок
+*.tmp.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -53,27 +53,30 @@ export default function CatalogPage() {
           const qty = order.dishes[dish.id] ?? 0;
 
           return (
-            <li
-              key={dish.id}
-              className="flex items-center gap-3 rounded-card border border-line bg-card p-2.5"
-            >
-              <Placeholder
-                seed={dish.seed}
-                className="h-12 w-12 shrink-0 rounded-[10px]"
-              />
+            <li key={dish.id}>
+              <button
+                type="button"
+                onClick={() => navigate(`/dish/${dish.id}`, { state: { from: "/catalog" } })}
+                className="flex w-full items-center gap-3 rounded-card border border-line bg-card p-2.5 text-left transition-all duration-200 hover:border-ink/20 active:scale-[0.99]"
+              >
+                <Placeholder
+                  seed={dish.seed}
+                  className="h-12 w-12 shrink-0 rounded-[10px]"
+                />
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-medium text-ink">{dish.name}</p>
-                <p className="text-[12px] text-muted">
-                  {dish.portion} · {formatPrice(dish.price)}
-                </p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-medium text-ink">{dish.name}</p>
+                  <p className="text-[12px] text-muted">
+                    {dish.portion} · {formatPrice(dish.price)}
+                  </p>
+                </div>
 
-              {qty > 0 && (
-                <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-[11px] leading-none font-medium text-white tabular-nums">
-                  {qty} в заказе
-                </span>
-              )}
+                {qty > 0 && (
+                  <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-[11px] leading-none font-medium text-white tabular-nums">
+                    {qty} в заказе
+                  </span>
+                )}
+              </button>
             </li>
           );
         })}

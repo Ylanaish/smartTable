@@ -100,17 +100,27 @@ export default function ChooseDishesPage() {
         {dishes.map((dish) => (
           <li
             key={dish.id}
-            className="flex items-center gap-3 rounded-card border border-line bg-card p-2.5"
+            className="flex items-center gap-1 rounded-card border border-line bg-card pr-2.5"
           >
-            <Placeholder
-              seed={dish.seed}
-              className="h-12 w-12 shrink-0 rounded-[10px]"
-            />
+            {/* Название и фото — соседние кнопки со степпером, а не вложенные в него:
+                button внутри button невалиден. */}
+            <button
+              type="button"
+              onClick={() => navigate(`/dish/${dish.id}`, { state: { from: "/menu" } })}
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-l-card p-2.5 text-left transition-colors hover:bg-canvas/70"
+            >
+              <Placeholder
+                seed={dish.seed}
+                className="h-12 w-12 shrink-0 rounded-[10px]"
+              />
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13.5px] font-medium text-ink">{dish.name}</p>
-              <p className="text-[12px] text-muted">{dish.portion}</p>
-            </div>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13.5px] font-medium text-ink">
+                  {dish.name}
+                </span>
+                <span className="block text-[12px] text-muted">{dish.portion}</span>
+              </span>
+            </button>
 
             <QuantityStepper
               compact

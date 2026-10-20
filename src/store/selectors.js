@@ -1,4 +1,4 @@
-import { DISHES, FORMATS, PREPAYMENT_PERCENT, STYLES } from "../data/catalog";
+import { DISHES, DISH_CATEGORIES, FORMATS, PREPAYMENT_PERCENT, STYLES } from "../data/catalog";
 
 export const SATIETY_OPTIMAL_MIN = 70;
 export const SATIETY_OPTIMAL_MAX = 85;
@@ -33,6 +33,10 @@ export function getStyle(id) {
 
 export function getDish(id) {
   return DISHES.find((dish) => dish.id === id) ?? null;
+}
+
+export function getCategoryLabel(id) {
+  return DISH_CATEGORIES.find((category) => category.id === id)?.label ?? "";
 }
 
 export function getFormat(id) {

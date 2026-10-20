@@ -12,6 +12,7 @@ import OrderTrackingPage from "./pages/OrderTrackingPage";
 import OrderStatusPage from "./pages/OrderStatusPage";
 import OrdersPage from "./pages/OrdersPage";
 import CatalogPage from "./pages/CatalogPage";
+import DishPage from "./pages/DishPage";
 import FinalPage from "./pages/FinalPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -30,6 +31,7 @@ const router = createHashRouter([
   { path: "/orders", element: <OrdersPage /> },
   { path: "/orders/:orderNo", element: <OrderStatusPage /> },
   { path: "/catalog", element: <CatalogPage /> },
+  { path: "/dish/:dishId", element: <DishPage /> },
   { path: "/done", element: <FinalPage /> },
   { path: "*", element: <NotFoundPage /> },
 ]);
