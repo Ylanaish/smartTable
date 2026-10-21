@@ -7,7 +7,7 @@ import Button from "../components/Button";
 import { useTelegram } from "../hooks/useTelegram";
 import { useOrders } from "../hooks/useOrders";
 import { useOrder } from "../hooks/useOrder";
-import { currentTime, generateOrderNo } from "../store/orderReducer";
+import { currentTime } from "../store/orderReducer";
 import { PAYMENT_METHODS, PREPAYMENT_PERCENT } from "../data/catalog";
 import {
   formatPrice,
@@ -15,6 +15,8 @@ import {
   getOrderTotal,
   getPrepayment,
 } from "../store/selectors";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -30,10 +32,34 @@ export default function PaymentPage() {
     dispatch({ type: "setField", field: "payMethod", value: id });
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     telegram.notification("success");
 
-    const orderNo = order.orderNo || generateOrderNo();
+    const payload = {
+      event_date: `${order.date}T${order.time}:00`,
+      guest_count: order.guests,
+      service_type: order.formatId === 3 ? "turnkey" : order.formatId === 2 ? "eco" : "boxes",
+      delivery_address: order.address || "Не указан",
+      client_phone: "не указан",
+      comment: order.comment ?? "",
+      style_id: order.styleId,
+      items: Object.entries(order.dishes).map(([dish_id, quantity]) => ({
+        dish_id: Number(dish_id),
+        quantity,
+      })),
+    };
+    const headers = { "Content-Type": "application/json" };
+    if (telegram.webApp?.initData) headers["X-Telegram-Init-Data"] = telegram.webApp.initData;
+
+    const response = await fetch(`${API_BASE_URL}/orders/`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) return;
+
+    const created = await response.json();
+    const orderNo = created.order_number;
     const paidAt = currentTime();
 
     // Сначала фиксируем номер и время, потом пишем их и в черновик, и в историю,
