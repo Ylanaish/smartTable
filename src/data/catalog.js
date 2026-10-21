@@ -9,25 +9,25 @@ export const PURPOSES = [
 
 export const STYLES = [
   {
-    id: "loft",
+    id: 1,
     name: "Лофт / Гранж",
     tags: ["Свечи", "Барбери", "Брускетто"],
     seed: 0,
   },
   {
-    id: "classic",
+    id: 2,
     name: "Классик Элеганс",
     tags: ["Юбилей", "Свадьба", "Торжество"],
     seed: 3,
   },
   {
-    id: "botanic",
+    id: 3,
     name: "Ботаника",
     tags: ["Зелень", "Дерево", "Лён"],
     seed: 1,
   },
   {
-    id: "terrace",
+    id: 4,
     name: "Терраса",
     tags: ["Свечи", "Гирлянды", "Открытый воздух"],
     seed: 5,
@@ -35,16 +35,16 @@ export const STYLES = [
 ];
 
 export const DISH_CATEGORIES = [
-  { id: "snacks", label: "Закуски" },
-  { id: "hot", label: "Горячее" },
-  { id: "sides", label: "Гарниры" },
-  { id: "desserts", label: "Десерты" },
+  { id: 1, label: "Закуски" },
+  { id: 2, label: "Горячее" },
+  { id: 3, label: "Гарниры" },
+  { id: 4, label: "Десерты" },
 ];
 
 export const DISHES = [
   {
-    id: "bruschetta",
-    category: "snacks",
+    id: 1,
+    category: 1,
     name: "Брускетта с томатами",
     portion: "120 г",
     price: 320,
@@ -67,8 +67,8 @@ export const DISHES = [
     tags: ["Вегетарианское", "Лёгкое"],
   },
   {
-    id: "salad-caesar",
-    category: "snacks",
+    id: 2,
+    category: 1,
     name: "Салат Цезарь",
     portion: "180 г",
     price: 540,
@@ -91,8 +91,8 @@ export const DISHES = [
     tags: ["Популярное"],
   },
   {
-    id: "meat-birds",
-    category: "hot",
+    id: 3,
+    category: 2,
     name: "Стейк из говядины",
     portion: "200 г",
     price: 890,
@@ -111,8 +111,8 @@ export const DISHES = [
     tags: ["Главное блюдо", "Высокобелковое"],
   },
   {
-    id: "salmon",
-    category: "hot",
+    id: 4,
+    category: 2,
     name: "Запечённый лосось",
     portion: "180 г",
     price: 760,
@@ -129,8 +129,8 @@ export const DISHES = [
     tags: ["Главное блюдо", "Нежное"],
   },
   {
-    id: "cardinale",
-    category: "hot",
+    id: 5,
+    category: 2,
     name: "Картофель по-деревенски",
     portion: "150 г",
     price: 290,
@@ -147,8 +147,8 @@ export const DISHES = [
     tags: ["Гарнир", "Вегетарианское"],
   },
   {
-    id: "chicken",
-    category: "hot",
+    id: 6,
+    category: 2,
     name: "Цыплёнок на гриле",
     portion: "200 г",
     price: 690,
@@ -170,8 +170,8 @@ export const DISHES = [
     tags: ["Главное блюдо", "Диетическое"],
   },
   {
-    id: "bulgur",
-    category: "sides",
+    id: 7,
+    category: 3,
     name: "Булгур с овощами",
     portion: "150 г",
     price: 240,
@@ -188,8 +188,8 @@ export const DISHES = [
     tags: ["Гарнир", "Вегетарианское", "Постное"],
   },
   {
-    id: "mashed",
-    category: "sides",
+    id: 8,
+    category: 3,
     name: "Картофельное пюре",
     portion: "150 г",
     price: 210,
@@ -206,8 +206,8 @@ export const DISHES = [
     tags: ["Гарнир", "Вегетарианское"],
   },
   {
-    id: "tiramisu",
-    category: "desserts",
+    id: 9,
+    category: 4,
     name: "Тирамису",
     portion: "120 г",
     price: 390,
@@ -224,8 +224,8 @@ export const DISHES = [
     tags: ["Десерт", "Популярное"],
   },
   {
-    id: "charlotte",
-    category: "desserts",
+    id: 10,
+    category: 4,
     name: "Шарлотка",
     portion: "120 г",
     price: 340,
@@ -242,8 +242,8 @@ export const DISHES = [
     tags: ["Десерт", "Домашнее"],
   },
   {
-    id: "mousse",
-    category: "desserts",
+    id: 11,
+    category: 4,
     name: "Мусс из чёрной смородины",
     portion: "100 г",
     price: 310,
@@ -263,21 +263,21 @@ export const DISHES = [
 
 export const FORMATS = [
   {
-    id: "boxes",
+    id: 1,
     name: "Боксы",
     description: "Стильные подставки в коробках (самовывоз/доставка)",
     priceFrom: 1500,
     seed: 3,
   },
   {
-    id: "eco",
+    id: 2,
     name: "Эко",
     description: "Натуральные материалы и минимализм",
     priceFrom: 2000,
     seed: 1,
   },
   {
-    id: "premium",
+    id: 3,
     name: "Премиум под ключ",
     description: "Сервировка, декор, обслуживание. Спецодежда, официанты",
     priceFrom: 3500,

@@ -28,19 +28,19 @@ export function formatDate(iso) {
 }
 
 export function getStyle(id) {
-  return STYLES.find((style) => style.id === id) ?? null;
+  return STYLES.find((style) => style.id === Number(id)) ?? null;
 }
 
 export function getDish(id) {
-  return DISHES.find((dish) => dish.id === id) ?? null;
+  return DISHES.find((dish) => dish.id === Number(id)) ?? null;
 }
 
 export function getCategoryLabel(id) {
-  return DISH_CATEGORIES.find((category) => category.id === id)?.label ?? "";
+  return DISH_CATEGORIES.find((category) => category.id === Number(id))?.label ?? "";
 }
 
 export function getFormat(id) {
-  return FORMATS.find((format) => format.id === id) ?? null;
+  return FORMATS.find((format) => format.id === Number(id)) ?? null;
 }
 
 export function getDishesCount(dishes) {

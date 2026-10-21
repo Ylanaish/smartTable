@@ -38,7 +38,7 @@ export default function DishPage() {
   const location = useLocation();
   const { order, dispatch } = useOrder();
 
-  const dish = getDish(dishId);
+  const dish = getDish(Number(dishId));
 
   if (!dish) {
     return (
