@@ -4,11 +4,21 @@ export default function ProgressRing({
   stroke = 9,
   label,
   className = "",
+  tone = "default",
 }) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(100, Math.max(0, value));
   const offset = circumference * (1 - clamped / 100);
+
+  // Дуга тоньше кнопок, поэтому берём оттенок светлее --color-brand (#14713c):
+  // на 9px тёмно-зелёный читается почти как чёрный.
+  const TONES = {
+    default: "var(--color-ink)",
+    ok: "#3aa76d",
+    low: "var(--color-amber-text)",
+    high: "#2f5f74",
+  };
 
   return (
     <div
@@ -29,7 +39,7 @@ export default function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--color-ink)"
+          stroke={TONES[tone] ?? TONES.default}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}

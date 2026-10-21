@@ -41,6 +41,12 @@ export default function ChooseDishesPage() {
 
   const perPerson = order.satietyMode === "perPerson";
   const satiety = getSatiety(order.dishes, order.guests, perPerson);
+  const tone =
+    satiety < SATIETY_OPTIMAL_MIN
+      ? "low"
+      : satiety > SATIETY_OPTIMAL_MAX
+        ? "high"
+        : "ok";
 
   const setQuantity = (id) => (quantity) =>
     dispatch({ type: "setDishQuantity", id, quantity });
@@ -71,7 +77,7 @@ export default function ChooseDishesPage() {
       />
 
       <div className="flex items-center gap-4 rounded-card border border-line bg-card px-4 py-4">
-        <ProgressRing value={satiety} size={78} stroke={9} />
+        <ProgressRing value={satiety} size={78} stroke={9} tone={tone} />
 
         <div className="min-w-0">
           <p className="text-[14px] leading-tight font-semibold text-ink">

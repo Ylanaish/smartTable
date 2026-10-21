@@ -1,14 +1,21 @@
+import { useState } from "react";
 import { useTelegram } from "../hooks/useTelegram";
 import { MinusIcon, PlusIcon } from "./icons";
 
-export default function GuestCounter({ value, onChange, min = 1, max = 300 }) {
+export default function GuestCounter({ value, onChange, min = 1 }) {
   const telegram = useTelegram();
+  // Пока поле в фокусе, показываем ровно то, что набрал пользователь: иначе
+  // зажатие в min не даёт стереть пятёрку и набрать новое число.
+  const [draft, setDraft] = useState(null);
+
+  const commit = (next) => {
+    setDraft(null);
+    if (next !== value) onChange(next);
+  };
 
   const step = (delta) => {
-    const next = Math.min(max, Math.max(min, value + delta));
-    if (next === value) return;
     telegram.haptic("light");
-    onChange(next);
+    commit(Math.max(min, value + delta));
   };
 
   return (
@@ -26,7 +33,15 @@ export default function GuestCounter({ value, onChange, min = 1, max = 300 }) {
         <MinusIcon className="h-4 w-4" />
       </button>
 
-      <span className="text-[14px] font-semibold tabular-nums">{value}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        value={draft ?? String(value)}
+        aria-label="Количество гостей"
+        onChange={(event) => setDraft(event.target.value.replace(/\D/g, ""))}
+        onBlur={() => commit(Math.max(min, Number(draft) || min))}
+        className="w-14 min-w-0 bg-transparent text-center text-[14px] font-semibold tabular-nums text-ink outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
 
       <button
         type="button"
