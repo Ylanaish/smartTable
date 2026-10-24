@@ -15,8 +15,7 @@ import {
   getOrderTotal,
   getPrepayment,
 } from "../store/selectors";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+import { apiFetch } from "../api";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -48,14 +47,11 @@ export default function PaymentPage() {
         quantity,
       })),
     };
-    const headers = { "Content-Type": "application/json" };
-    if (telegram.webApp?.initData) headers["X-Telegram-Init-Data"] = telegram.webApp.initData;
-
-    const response = await fetch(`${API_BASE_URL}/orders/`, {
+    const response = await apiFetch("/orders/", {
       method: "POST",
-      headers,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
+    }, telegram.webApp);
     if (!response.ok) return;
 
     const created = await response.json();

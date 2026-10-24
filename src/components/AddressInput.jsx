@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPinIcon } from "./icons";
 import { useTelegram } from "../hooks/useTelegram";
+import { apiFetch } from "../api";
 
 // Запросы идут в наш бэкенд: ключ Dadata живёт на сервере, в бандл не попадает.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_MS = 350;
 
@@ -29,17 +29,9 @@ export default function AddressInput({ value, onChange }) {
     const controller = new AbortController();
     const timer = setTimeout(() => {
       const params = new URLSearchParams({ q: query });
-      const headers = {};
-      // rbacx пускает только по подписи Telegram initData.
-      if (telegram.webApp?.initData) {
-        headers["X-Telegram-Init-Data"] = telegram.webApp.initData;
-      }
-
-      fetch(`${API_BASE_URL}/address/suggest?${params}`, {
-        headers,
-        signal: controller.signal,
-      })
-        .then((response) => (response.ok ? response.json() : { suggestions: [] }))
+      apiFetch(`/address/suggest?${params}`, { signal: controller.signal }, telegram.webApp).then(
+        (response) => (response.ok ? response.json() : { suggestions: [] }),
+      )
         .then((data) => {
           const items = data.suggestions ?? [];
           setSuggestions(items);
