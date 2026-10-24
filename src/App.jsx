@@ -15,6 +15,7 @@ import CatalogPage from "./pages/CatalogPage";
 import DishPage from "./pages/DishPage";
 import FinalPage from "./pages/FinalPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { CatalogProvider } from "./catalogContext.jsx";
 
 // HashRouter: GitHub Pages не умеет отдавать index.html на вложенные пути,
 // поэтому весь маршрут держим в хеше — сервер его никогда не видит.
@@ -39,9 +40,11 @@ const router = createHashRouter([
 function App() {
   return (
     <OrderProvider>
-      <HistoryProvider>
-        <RouterProvider router={router} />
-      </HistoryProvider>
+      <CatalogProvider>
+        <HistoryProvider>
+          <RouterProvider router={router} />
+        </HistoryProvider>
+      </CatalogProvider>
     </OrderProvider>
   );
 }

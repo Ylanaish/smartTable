@@ -5,23 +5,23 @@ import PageHeader from "../components/PageHeader";
 import Chip from "../components/Chip";
 import Placeholder from "../components/Placeholder";
 import Button from "../components/Button";
-import { DISHES, DISH_CATEGORIES } from "../data/catalog";
+import { useCatalog } from "../catalogContext.js";
 import { useOrder } from "../hooks/useOrder";
 import { formatPrice } from "../store/selectors";
-
-const CATEGORIES = [{ id: "all", label: "Все" }, ...DISH_CATEGORIES];
 
 export default function CatalogPage() {
   const navigate = useNavigate();
   const { order } = useOrder();
+  const { catalog } = useCatalog();
   const [category, setCategory] = useState("all");
+  const CATEGORIES = [{ id: "all", label: "Все" }, ...catalog.categories];
 
   const dishes = useMemo(
     () =>
       category === "all"
-        ? DISHES
-        : DISHES.filter((dish) => dish.category === category),
-    [category],
+        ? catalog.dishes
+        : catalog.dishes.filter((dish) => dish.category === category),
+    [category, catalog.dishes],
   );
 
   return (

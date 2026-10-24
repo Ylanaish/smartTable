@@ -16,14 +16,16 @@ import {
   getPrepayment,
 } from "../store/selectors";
 import { apiFetch } from "../api";
+import { useCatalog } from "../catalogContext.js";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { addOrder } = useOrders();
   const { order, dispatch } = useOrder();
+  const { catalog } = useCatalog();
 
-  const total = getOrderTotal(order);
+  const total = getOrderTotal(order, catalog);
   const prepayment = getPrepayment(total);
 
   const select = (id) => {
@@ -85,7 +87,7 @@ export default function PaymentPage() {
             {formatPrice(total)}
           </p>
           <p className="mt-1.5 text-[12px] text-muted">
-            ({order.guests} персон, {getFormat(order.formatId)?.name.toLowerCase()})
+            ({order.guests} персон, {getFormat(order.formatId, catalog)?.name.toLowerCase()})
           </p>
         </section>
 

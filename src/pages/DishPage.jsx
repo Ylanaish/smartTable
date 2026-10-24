@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import { QuantityStepper } from "../components/QuantityStepper";
 import { ArrowLeftIcon } from "../components/icons";
 import { useOrder } from "../hooks/useOrder";
+import { useCatalog } from "../catalogContext.js";
 import { formatPrice, getCategoryLabel, getDish } from "../store/selectors";
 
 const ORIGINS = {
@@ -37,8 +38,9 @@ export default function DishPage() {
   const { dishId } = useParams();
   const location = useLocation();
   const { order, dispatch } = useOrder();
+  const { catalog } = useCatalog();
 
-  const dish = getDish(Number(dishId));
+  const dish = getDish(Number(dishId), catalog);
 
   if (!dish) {
     return (
@@ -96,7 +98,7 @@ export default function DishPage() {
       <div className="relative">
         <Placeholder seed={dish.seed} className="aspect-[4/3] w-full rounded-card" />
         <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] leading-none font-medium text-ink backdrop-blur-sm">
-          {getCategoryLabel(dish.category)}
+          {getCategoryLabel(dish.category, catalog)}
         </span>
       </div>
 

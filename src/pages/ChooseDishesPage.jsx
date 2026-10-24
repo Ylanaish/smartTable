@@ -9,7 +9,8 @@ import ProgressRing from "../components/ProgressRing";
 import Placeholder from "../components/Placeholder";
 import { QuantityStepper } from "../components/QuantityStepper";
 import Button from "../components/Button";
-import { DISHES, DISH_CATEGORIES, STEPS } from "../data/catalog";
+import { STEPS } from "../data/catalog";
+import { useCatalog } from "../catalogContext.js";
 import { useOrder } from "../hooks/useOrder";
 import {
   SATIETY_OPTIMAL_MAX,
@@ -32,15 +33,18 @@ function getHint(value) {
 export default function ChooseDishesPage() {
   const navigate = useNavigate();
   const { order, dispatch } = useOrder();
-  const [category, setCategory] = useState(DISH_CATEGORIES[0].id);
+  const { catalog } = useCatalog();
+  const [category, setCategory] = useState(null);
+
+  const activeCategory = category ?? catalog.categories[0]?.id;
 
   const dishes = useMemo(
-    () => DISHES.filter((dish) => dish.category === category),
-    [category],
+    () => catalog.dishes.filter((dish) => dish.category === activeCategory),
+    [catalog.dishes, activeCategory],
   );
 
   const perPerson = order.satietyMode === "perPerson";
-  const satiety = getSatiety(order.dishes, order.guests, perPerson);
+  const satiety = getSatiety(order.dishes, order.guests, perPerson, catalog);
   const tone =
     satiety < SATIETY_OPTIMAL_MIN
       ? "low"
@@ -91,11 +95,11 @@ export default function ChooseDishesPage() {
       </div>
 
       <div className="scrollbar-none -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
-        {DISH_CATEGORIES.map((item) => (
+        {catalog.categories.map((item) => (
           <Chip
             key={item.id}
             label={item.label}
-            active={item.id === category}
+            active={item.id === activeCategory}
             onClick={() => setCategory(item.id)}
             className="shrink-0"
           />

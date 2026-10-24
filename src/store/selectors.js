@@ -27,42 +27,42 @@ export function formatDate(iso) {
   });
 }
 
-export function getStyle(id) {
-  return STYLES.find((style) => style.id === Number(id)) ?? null;
+export function getStyle(id, catalog) {
+  return (catalog?.styles ?? STYLES).find((style) => style.id === Number(id)) ?? null;
 }
 
-export function getDish(id) {
-  return DISHES.find((dish) => dish.id === Number(id)) ?? null;
+export function getDish(id, catalog) {
+  return (catalog?.dishes ?? DISHES).find((dish) => dish.id === Number(id)) ?? null;
 }
 
-export function getCategoryLabel(id) {
-  return DISH_CATEGORIES.find((category) => category.id === Number(id))?.label ?? "";
+export function getCategoryLabel(id, catalog) {
+  return (catalog?.categories ?? DISH_CATEGORIES).find((category) => category.id === Number(id))?.label ?? "";
 }
 
-export function getFormat(id) {
-  return FORMATS.find((format) => format.id === Number(id)) ?? null;
+export function getFormat(id, catalog) {
+  return (catalog?.formats ?? FORMATS).find((format) => format.id === Number(id)) ?? null;
 }
 
 export function getDishesCount(dishes) {
   return Object.values(dishes).reduce((sum, qty) => sum + qty, 0);
 }
 
-export function getDishesPrice(dishes) {
+export function getDishesPrice(dishes, catalog) {
   return Object.entries(dishes).reduce((sum, [id, qty]) => {
-    const dish = getDish(id);
+    const dish = getDish(id, catalog);
     return sum + (dish ? dish.price * qty : 0);
   }, 0);
 }
 
-export function getFullness(dishes) {
+export function getFullness(dishes, catalog) {
   return Object.entries(dishes).reduce((sum, [id, qty]) => {
-    const dish = getDish(id);
+    const dish = getDish(id, catalog);
     return sum + (dish ? dish.fullness * qty : 0);
   }, 0);
 }
 
-export function getSatiety(dishes, guests, perPerson) {
-  const fullness = getFullness(dishes);
+export function getSatiety(dishes, guests, perPerson, catalog) {
+  const fullness = getFullness(dishes, catalog);
   if (fullness === 0) return 0;
 
   const people = Math.max(guests, 1);
@@ -71,13 +71,13 @@ export function getSatiety(dishes, guests, perPerson) {
   return Math.round(Math.min(100, (fullness / target) * 100));
 }
 
-export function getServicePrice(formatId, guests) {
-  const format = getFormat(formatId);
+export function getServicePrice(formatId, guests, catalog) {
+  const format = getFormat(formatId, catalog);
   return format ? format.priceFrom * Math.max(guests, 1) : 0;
 }
 
-export function getOrderTotal({ dishes, formatId, guests }) {
-  return getDishesPrice(dishes) + getServicePrice(formatId, guests);
+export function getOrderTotal({ dishes, formatId, guests }, catalog) {
+  return getDishesPrice(dishes, catalog) + getServicePrice(formatId, guests, catalog);
 }
 
 export function getPrepayment(total) {

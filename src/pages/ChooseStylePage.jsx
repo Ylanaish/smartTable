@@ -6,13 +6,15 @@ import RadioCircle from "../components/RadioCircle";
 import Button from "../components/Button";
 import Placeholder from "../components/Placeholder";
 import { useTelegram } from "../hooks/useTelegram";
-import { STEPS, STYLES } from "../data/catalog";
+import { STEPS } from "../data/catalog";
+import { useCatalog } from "../catalogContext.js";
 import { useOrder } from "../hooks/useOrder";
 
 export default function ChooseStylePage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
+  const { catalog } = useCatalog();
 
   const selectStyle = (id) => {
     telegram.haptic("light");
@@ -38,7 +40,7 @@ export default function ChooseStylePage() {
       />
 
       <ul className="flex flex-col gap-3.5" role="radiogroup" aria-label="Стиль стола">
-        {STYLES.map((style) => {
+        {catalog.styles.map((style) => {
           const isActive = style.id === order.styleId;
 
           return (

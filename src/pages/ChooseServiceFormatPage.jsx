@@ -6,7 +6,8 @@ import RadioCircle from "../components/RadioCircle";
 import Placeholder from "../components/Placeholder";
 import Button from "../components/Button";
 import { useTelegram } from "../hooks/useTelegram";
-import { FORMATS, STEPS } from "../data/catalog";
+import { STEPS } from "../data/catalog";
+import { useCatalog } from "../catalogContext.js";
 import { useOrder } from "../hooks/useOrder";
 import { formatPrice } from "../store/selectors";
 
@@ -14,6 +15,7 @@ export default function ChooseServiceFormatPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
+  const { catalog } = useCatalog();
 
   const select = (id) => {
     telegram.haptic("light");
@@ -39,7 +41,7 @@ export default function ChooseServiceFormatPage() {
       />
 
       <ul className="flex flex-col gap-2.5" role="radiogroup" aria-label="Формат сервиса">
-        {FORMATS.map((format) => {
+        {catalog.formats.map((format) => {
           const isActive = format.id === order.formatId;
 
           return (
