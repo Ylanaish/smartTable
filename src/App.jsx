@@ -30,7 +30,7 @@ const router = createHashRouter([
   { path: "/payment", element: <PaymentPage /> },
   { path: "/tracking", element: <OrderTrackingPage /> },
   { path: "/orders", element: <OrdersPage /> },
-  { path: "/orders/:orderNo", element: <OrderStatusPage /> },
+  { path: "/orders/:orderId", element: <OrderStatusPage /> },
   { path: "/catalog", element: <CatalogPage /> },
   { path: "/dish/:dishId", element: <DishPage /> },
   { path: "/done", element: <FinalPage /> },

@@ -1,18 +1,13 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import PageHeader from "../components/PageHeader";
 import TrackingPanel from "../components/TrackingPanel";
 import Button from "../components/Button";
-import { useOrder } from "../hooks/useOrder";
-import { createOrderSnapshot } from "../store/orderHistory";
+import { useOrders } from "../hooks/useOrders";
 
 export default function OrderTrackingPage() {
   const navigate = useNavigate();
-  const { order } = useOrder();
-
-  // Панель читает снимок заказа, поэтому черновик приводим к той же форме.
-  const snapshot = useMemo(() => createOrderSnapshot(order), [order]);
+  const { currentOrder } = useOrders();
 
   return (
     <PageShell
@@ -30,7 +25,7 @@ export default function OrderTrackingPage() {
         className="pt-6 mb-7"
       />
 
-      <TrackingPanel order={snapshot} />
+      <TrackingPanel order={currentOrder} />
     </PageShell>
   );
 }

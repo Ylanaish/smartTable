@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import PageHeader from "../components/PageHeader";
@@ -7,7 +8,6 @@ import Button from "../components/Button";
 import { useTelegram } from "../hooks/useTelegram";
 import { useOrders } from "../hooks/useOrders";
 import { useOrder } from "../hooks/useOrder";
-import { currentTime } from "../store/orderReducer";
 import { PAYMENT_METHODS, PREPAYMENT_PERCENT } from "../data/catalog";
 import {
   formatPrice,
@@ -15,8 +15,8 @@ import {
   getOrderTotal,
   getPrepayment,
 } from "../store/selectors";
-import { apiFetch } from "../api";
 import { useCatalog } from "../catalogContext.js";
+import OrderCreationRepository from "../repositories/orderCreationRepository";
 
 export default function PaymentPage() {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ export default function PaymentPage() {
   const { addOrder } = useOrders();
   const { order, dispatch } = useOrder();
   const { catalog } = useCatalog();
+  const [submitting, setSubmitting] = useState(false);
 
   const total = getOrderTotal(order, catalog);
   const prepayment = getPrepayment(total);
@@ -34,38 +35,22 @@ export default function PaymentPage() {
   };
 
   const handlePay = async () => {
+    if (submitting) return;
     telegram.notification("success");
-
-    const payload = {
-      event_date: `${order.date}T${order.time}:00`,
-      guest_count: order.guests,
-      service_type: order.formatId === 3 ? "turnkey" : order.formatId === 2 ? "eco" : "boxes",
-      delivery_address: order.address || "Не указан",
-      client_phone: "не указан",
-      comment: order.comment ?? "",
-      style_id: order.styleId,
-      items: Object.entries(order.dishes).map(([dish_id, quantity]) => ({
-        dish_id: Number(dish_id),
-        quantity,
-      })),
-    };
-    const response = await apiFetch("/orders/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }, telegram.webApp);
-    if (!response.ok) return;
-
-    const created = await response.json();
-    const orderNo = created.order_number;
-    const paidAt = currentTime();
-
-    // Сначала фиксируем номер и время, потом пишем их и в черновик, и в историю,
-    // чтобы оба источника показывали один и тот же заказ.
-    addOrder({ ...order, orderNo, paidAt });
-    dispatch({ type: "pay", method: order.payMethod, orderNo, paidAt });
-
-    navigate("/tracking");
+    setSubmitting(true);
+    try {
+      const created = await new OrderCreationRepository(telegram.webApp).createOrder({
+        ...order,
+        formatName: getFormat(order.formatId, catalog)?.name,
+      });
+      addOrder(created);
+      dispatch({ type: "pay", method: order.payMethod, orderNo: created.orderNo });
+      navigate("/tracking");
+    } catch {
+      // Не создаём локальный заказ, если backend отклонил запрос.
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -73,7 +58,7 @@ export default function PaymentPage() {
       docTitle="Оплата"
       contentClassName="pb-6"
       footer={
-        <Button icon="none" onClick={handlePay}>
+        <Button icon="none" onClick={handlePay} disabled={submitting}>
           Оплатить {formatPrice(prepayment)}
         </Button>
       }

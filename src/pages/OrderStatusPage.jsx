@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import PageHeader from "../components/PageHeader";
@@ -5,14 +6,30 @@ import TrackingPanel from "../components/TrackingPanel";
 import StatusBadge from "../components/StatusBadge";
 import Button from "../components/Button";
 import { getStatus } from "../data/catalog";
-import { useOrders } from "../hooks/useOrders";
+import { useTelegram } from "../hooks/useTelegram";
+import OrderHistoryRepository from "../repositories/orderHistoryRepository";
 
 export default function OrderStatusPage() {
   const navigate = useNavigate();
-  const { orderNo } = useParams();
-  const { orders } = useOrders();
+  const { orderId } = useParams();
+  const telegram = useTelegram();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const order = orders.find((item) => item.orderNo === orderNo);
+  useEffect(() => {
+    new OrderHistoryRepository(telegram.webApp).getById(orderId)
+      .then(setOrder)
+      .catch(() => setOrder(null))
+      .finally(() => setLoading(false));
+  }, [orderId, telegram.webApp]);
+
+  if (loading) {
+    return (
+      <PageShell docTitle="Заказ" contentClassName="pb-6">
+        <p className="pt-10 text-center text-[13px] text-muted">Загружаем заказ…</p>
+      </PageShell>
+    );
+  }
 
   if (!order) {
     return (
@@ -23,7 +40,7 @@ export default function OrderStatusPage() {
       >
         <PageHeader
           title="Заказ не найден"
-          subtitle={`Заказа № ${orderNo} нет в истории на этом устройстве`}
+          subtitle={`Заказа с идентификатором ${orderId} не найдено`}
           className="pt-10 mb-6 text-center"
         />
       </PageShell>

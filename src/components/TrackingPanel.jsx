@@ -14,8 +14,8 @@ function addMinutes(time, delta) {
 /** Статусы до текущего этапа включительно — считаются выполненными. */
 function buildSteps(order) {
   const doneCount = getStatusIndex(order.status);
-  const serveAt = order.time || "18:00";
-  const paidAt = order.paidAt || "10:24";
+  const serveAt = order?.time || "18:00";
+  const paidAt = order?.paidAt || "10:24";
 
   return [
     { label: "Оплата получена", time: paidAt },
@@ -26,7 +26,7 @@ function buildSteps(order) {
 }
 
 export default function TrackingPanel({ order }) {
-  const steps = buildSteps(order);
+  const steps = buildSteps(order ?? {});
 
   return (
     <>
@@ -39,9 +39,9 @@ export default function TrackingPanel({ order }) {
       <div className="mt-6 overflow-hidden rounded-card border border-line bg-card">
         <div className="border-b border-line px-4 py-3.5">
           <p className="text-[16px] font-bold tracking-[-0.01em] text-ink">
-            № {order.orderNo}
+            № {order?.orderNo}
           </p>
-          {order.formatName && (
+          {order?.formatName && (
             <p className="mt-0.5 text-[12.5px] text-muted">
               {order.guests} персон · {order.formatName}
             </p>
@@ -49,15 +49,15 @@ export default function TrackingPanel({ order }) {
         </div>
         <div className="px-4 py-3.5">
           <p className="text-[13px] text-muted">
-            {formatDate(order.eventDate ?? order.date)}, {order.time}
+            {formatDate(order?.eventDate ?? order?.date)}, {order?.time}
           </p>
-          {order.address && (
+          {order?.address && (
             <p className="mt-1 text-[13px] text-muted">{order.address}</p>
           )}
         </div>
       </div>
 
-      {order.comment && (
+      {order?.comment && (
         <div className="mt-4 rounded-card border border-line bg-card px-4 py-4">
           <h2 className="mb-2 text-[13px] font-semibold tracking-[-0.01em] text-ink">
             Комментарий к заказу
@@ -68,7 +68,7 @@ export default function TrackingPanel({ order }) {
         </div>
       )}
 
-      {order.dishes?.length > 0 && (
+      {order?.dishes?.length > 0 && (
         <div className="mt-4 rounded-card border border-line bg-card px-4 py-4">
           <h2 className="mb-3 text-[13px] font-semibold tracking-[-0.01em] text-ink">
             Состав заказа

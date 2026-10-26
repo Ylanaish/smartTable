@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import PageHeader from "../components/PageHeader";
 import StepCounter from "../components/StepCounter";
@@ -32,9 +32,10 @@ function getHint(value) {
 
 export default function ChooseDishesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { order, dispatch } = useOrder();
   const { catalog } = useCatalog();
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState(location.state?.category ?? null);
 
   const activeCategory = category ?? catalog.categories[0]?.id;
 
@@ -116,7 +117,9 @@ export default function ChooseDishesPage() {
                 button внутри button невалиден. */}
             <button
               type="button"
-              onClick={() => navigate(`/dish/${dish.id}`, { state: { from: "/menu" } })}
+              onClick={() => navigate(`/dish/${dish.id}`, {
+                state: { from: "/menu", category: activeCategory },
+              })}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-l-card p-2.5 text-left transition-colors hover:bg-canvas/70"
             >
               <Placeholder

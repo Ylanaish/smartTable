@@ -65,6 +65,11 @@ export default function DishPage() {
 
   const origin = ORIGINS[location.state?.from] ?? DEFAULT_ORIGIN;
   const quantity = order.dishes[dish.id] ?? 0;
+  const returnToOrigin = () => navigate(origin.back, {
+    state: location.state?.category == null
+      ? undefined
+      : { category: location.state.category },
+  });
 
   return (
     <PageShell
@@ -79,7 +84,7 @@ export default function DishPage() {
             }
           />
           <div className="flex-1">
-            <Button icon="none" onClick={() => navigate(origin.back)}>
+            <Button icon="none" onClick={returnToOrigin}>
               {origin.label}
             </Button>
           </div>
@@ -88,7 +93,7 @@ export default function DishPage() {
     >
       <button
         type="button"
-        onClick={() => navigate(origin.back)}
+        onClick={returnToOrigin}
         className="mt-4 mb-3 inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-ink"
       >
         <ArrowLeftIcon className="h-4 w-4" />

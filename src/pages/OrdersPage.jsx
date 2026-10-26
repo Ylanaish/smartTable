@@ -9,7 +9,7 @@ import { formatDate, formatPrice } from "../store/selectors";
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { orders, loading } = useOrders();
 
   return (
     <PageShell
@@ -31,7 +31,11 @@ export default function OrdersPage() {
         className="pt-6 mb-5"
       />
 
-      {orders.length === 0 ? (
+      {loading ? (
+        <p className="rounded-card border border-line bg-card px-4 py-8 text-center text-[13px] text-muted">
+          Загружаем заказы…
+        </p>
+      ) : orders.length === 0 ? (
         <div className="flex flex-col items-center rounded-card border border-line bg-card px-6 py-12 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-canvas">
             <InboxIcon className="h-6 w-6 text-muted" />
@@ -49,10 +53,10 @@ export default function OrdersPage() {
       ) : (
         <ul className="flex flex-col gap-2.5">
           {orders.map((order) => (
-            <li key={order.orderNo}>
+            <li key={order.id}>
               <button
                 type="button"
-                onClick={() => navigate(`/orders/${order.orderNo}`)}
+                onClick={() => navigate(`/orders/${order.id}`)}
                 className="flex w-full items-center gap-3 rounded-card border border-line bg-card p-3.5 text-left transition-all duration-200 hover:border-ink/20 active:scale-[0.99]"
               >
                 <span className="min-w-0 flex-1">
