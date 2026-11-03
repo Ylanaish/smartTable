@@ -7,7 +7,7 @@ import { apiFetch } from "../api";
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_MS = 350;
 
-export default function AddressInput({ value, onChange }) {
+export default function AddressInput({ value, onChange, error = false }) {
   const telegram = useTelegram();
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
@@ -63,7 +63,13 @@ export default function AddressInput({ value, onChange }) {
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex h-11 items-center gap-2.5 rounded-xl border border-line bg-card px-3.5 transition-colors focus-within:border-ink/35">
+      <div
+        className={`flex h-11 items-center gap-2.5 rounded-xl border px-3.5 transition-colors ${
+          error
+            ? "border-red-500 bg-red-50/40 focus-within:border-red-500"
+            : "border-line bg-card focus-within:border-ink/35"
+        }`}
+      >
         <MapPinIcon className="h-[18px] w-[18px] shrink-0 text-muted" />
         <input
           type="text"
@@ -73,6 +79,7 @@ export default function AddressInput({ value, onChange }) {
           placeholder="Город, улица, дом, подъезд/этаж"
           aria-autocomplete="list"
           aria-expanded={open}
+          aria-invalid={error}
           className="w-full min-w-0 bg-transparent text-[14px] text-ink outline-none placeholder:text-muted/80"
         />
       </div>

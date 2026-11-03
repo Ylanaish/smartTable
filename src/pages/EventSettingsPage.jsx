@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import PageHeader from "../components/PageHeader";
@@ -23,19 +24,54 @@ function Field({ label, children }) {
 export default function EventSettingsPage() {
   const navigate = useNavigate();
   const { order, dispatch } = useOrder();
+  const phoneRef = useRef(null);
+  const addressRef = useRef(null);
+  const [phoneError, setPhoneError] = useState(false);
+  const [addressError, setAddressError] = useState(false);
 
   const setField = (field) => (value) => dispatch({ type: "setField", field, value });
+
+  const goNext = () => {
+    if (!order.address?.trim()) {
+      setAddressError(true);
+      addressRef.current?.focus();
+      return;
+    }
+
+    if (!order.phone?.trim()) {
+      setPhoneError(true);
+      phoneRef.current?.focus();
+      return;
+    }
+
+    navigate(STEPS[0].next);
+  };
+
+  const goToStep = (step) => {
+    if (step > 1 && (!order.address?.trim() || !order.phone?.trim())) {
+      if (!order.address?.trim()) {
+        setAddressError(true);
+        addressRef.current?.focus();
+      } else {
+        setPhoneError(true);
+        phoneRef.current?.focus();
+      }
+      return;
+    }
+
+    navigate(STEPS[step - 1].path);
+  };
 
   return (
     <PageShell
       docTitle="Параметры мероприятия"
       contentClassName="pb-6"
-      footer={<Button onClick={() => navigate(STEPS[0].next)}>{STEPS[0].label}</Button>}
+      footer={<Button onClick={goNext}>{STEPS[0].label}</Button>}
     >
       <StepCounter
         className="pt-3 pb-6"
         currentStep={1}
-        onStepClick={(step) => navigate(STEPS[step - 1].path)}
+        onStepClick={goToStep}
       />
 
       <PageHeader
@@ -68,7 +104,38 @@ export default function EventSettingsPage() {
         </Field>
 
         <Field label="Адрес доставки">
-          <AddressInput value={order.address} onChange={setField("address")} />
+          <div
+            ref={addressRef}
+            tabIndex={-1}
+          >
+            <AddressInput
+              value={order.address}
+              error={addressError}
+              onChange={(value) => {
+                setField("address")(value);
+                if (value.trim()) setAddressError(false);
+              }}
+            />
+          </div>
+        </Field>
+
+        <Field label="Номер телефона">
+          <input
+            ref={phoneRef}
+            type="tel"
+            value={order.phone ?? ""}
+            onChange={(event) => {
+              setField("phone")(event.target.value);
+              if (event.target.value.trim()) setPhoneError(false);
+            }}
+            placeholder="+7 (999) 123-45-67"
+            aria-invalid={phoneError}
+            className={`w-full rounded-xl border bg-card px-3.5 py-2.5 text-[14px] leading-snug text-ink outline-none transition-colors placeholder:text-muted/80 ${
+              phoneError
+                ? "border-red-500 bg-red-50/40 focus:border-red-500"
+                : "border-line focus:border-ink/35"
+            }`}
+          />
         </Field>
 
         <Field label="Комментарий к заказу">

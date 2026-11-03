@@ -23,7 +23,7 @@ export default function PaymentPage() {
   const telegram = useTelegram();
   const { addOrder } = useOrders();
   const { order, dispatch } = useOrder();
-  const { catalog } = useCatalog();
+  const { catalog, loading: catalogLoading } = useCatalog();
   const [submitting, setSubmitting] = useState(false);
 
   const total = getOrderTotal(order, catalog);
@@ -35,7 +35,7 @@ export default function PaymentPage() {
   };
 
   const handlePay = async () => {
-    if (submitting) return;
+    if (submitting || catalogLoading || catalog.dishes.length === 0) return;
     telegram.notification("success");
     setSubmitting(true);
     try {
@@ -58,7 +58,11 @@ export default function PaymentPage() {
       docTitle="Оплата"
       contentClassName="pb-6"
       footer={
-        <Button icon="none" onClick={handlePay} disabled={submitting}>
+        <Button
+          icon="none"
+          onClick={handlePay}
+          disabled={submitting || catalogLoading || catalog.dishes.length === 0}
+        >
           Оплатить {formatPrice(prepayment)}
         </Button>
       }

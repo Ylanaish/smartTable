@@ -6,8 +6,8 @@ function money(value) {
 
 function mapCatalog(menu, styles, formats) {
   const dishes = (menu.dishes ?? []).map((dish, index) => ({
-    id: dish.id,
-    category: dish.category_id,
+    id: Number(dish.id),
+    category: dish.category_id == null ? null : Number(dish.category_id),
     categoryName: dish.category_name,
     name: dish.title,
     portion: `${dish.weight_grams} г`,
