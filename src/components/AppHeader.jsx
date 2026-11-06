@@ -1,51 +1,56 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTelegram } from "../hooks/useTelegram";
-import { DotsIcon, HomeIcon } from "./icons";
+import { ArrowLeftIcon } from "./icons";
 
+// onDark: хедер лежит поверх тёмного хиро-градиента (интро, каталог) — текст белый.
+// По умолчанию хедер на светлом фоне страницы — тёмный текст.
 export default function AppHeader({
-  title = "Умный Стол",
-  subtitle = "мини-приложение",
-  theme = "dark",
+  title = "Северный привоз",
+  subtitle = "свежая рыба с доставкой",
+  onDark = false,
+  back = false,
 }) {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { pathname } = useLocation();
-  const isLight = theme === "light";
 
-  // На самой главной иконка ведёт бы сама на себя — там оставляем пустой слот.
-  const showHome = pathname !== "/home";
+  // Назад — только на вложенных страницах; на каталоге и интро слот пустой.
+  const showBack = back && pathname !== "/collection" && pathname !== "/intro";
 
-  const goHome = () => {
+  const goBack = () => {
     telegram.haptic("light");
-    navigate("/home");
+    // Назад по истории возвращает в то же место списка, откуда пришёл пользователь.
+    // При прямом открытии ссылки истории нет — ведём в каталог.
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/collection");
   };
 
   const iconButton = [
-    "flex h-9 w-9 items-center justify-center rounded-full transition-colors active:scale-95",
-    isLight ? "hover:bg-white/15" : "hover:bg-black/5",
+    "flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-90",
+    onDark ? "text-white hover:bg-white/15" : "text-ink hover:bg-primary/8",
   ].join(" ");
 
   return (
     <header
       className={[
         "relative z-30 flex h-[62px] shrink-0 items-center justify-between px-3",
-        isLight ? "text-white" : "text-ink",
+        onDark ? "text-white" : "text-ink",
       ].join(" ")}
     >
-      {showHome ? (
-        <button type="button" onClick={goHome} aria-label="На главную" className={iconButton}>
-          <HomeIcon className="h-[22px] w-[22px]" />
+      {showBack ? (
+        <button type="button" onClick={goBack} aria-label="Назад" className={iconButton}>
+          <ArrowLeftIcon className="h-[22px] w-[22px]" />
         </button>
       ) : (
-        // Плейсхолдер нужен, иначе justify-between прижмёт кнопку меню влево.
-        <span className="h-9 w-9" aria-hidden="true" />
+        // Плейсхолдер нужен, иначе содержимое сместится влево.
+        <span className="h-10 w-10" aria-hidden="true" />
       )}
 
       <div className="pointer-events-none absolute inset-x-16 top-1/2 -translate-y-1/2 text-center">
         <p
           className={[
-            "text-[14px] leading-tight font-semibold tracking-tight",
-            isLight ? "text-white" : "text-ink",
+            "text-[14px] leading-tight font-bold tracking-tight",
+            onDark ? "text-white" : "text-ink",
           ].join(" ")}
         >
           {title}
@@ -53,8 +58,8 @@ export default function AppHeader({
         {subtitle && (
           <p
             className={[
-              "text-[11px] leading-tight",
-              isLight ? "text-white/65" : "text-muted",
+              "text-[11px] leading-tight font-medium",
+              onDark ? "text-white/70" : "text-muted",
             ].join(" ")}
           >
             {subtitle}
@@ -62,14 +67,8 @@ export default function AppHeader({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => telegram.haptic("light")}
-        aria-label="Меню"
-        className={iconButton}
-      >
-        <DotsIcon className="h-[22px] w-[22px]" />
-      </button>
+      {/* Второй слот — пустой: держит заголовок по центру. */}
+      <span className="h-10 w-10" aria-hidden="true" />
     </header>
   );
 }

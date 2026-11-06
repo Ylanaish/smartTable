@@ -16,10 +16,10 @@ export function useTelegram() {
       webApp.disableVerticalSwipes();
     }
     if (typeof webApp.setHeaderColor === "function") {
-      webApp.setHeaderColor("#101614");
+      webApp.setHeaderColor("#0e3a5c");
     }
     if (typeof webApp.setBackgroundColor === "function") {
-      webApp.setBackgroundColor("#101614");
+      webApp.setBackgroundColor("#0e3a5c");
     }
   }, [webApp]);
 

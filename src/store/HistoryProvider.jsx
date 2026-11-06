@@ -1,52 +1,31 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { HistoryContext } from "./HistoryContext";
-import { useTelegram } from "../hooks/useTelegram";
-import OrderHistoryRepository from "../repositories/orderHistoryRepository";
+import { useCallback, useMemo, useState } from "react";
+import { HistoryContext, loadOrders, saveOrders } from "./HistoryContext";
 
+// Мок-версия истории заявок на localStorage. Позже заменяется загрузкой с сервера.
 export default function HistoryProvider({ children }) {
-  const telegram = useTelegram();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(loadOrders);
   const [currentOrder, setCurrentOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const addOrder = useCallback((order) => {
+    const record = { ...order, id: order.orderNo, status: "new", createdAt: new Date().toISOString() };
+    setCurrentOrder(record);
+    setOrders((previous) => {
+      const next = [record, ...previous.filter((item) => item.id !== record.id)];
+      saveOrders(next);
+      return next;
+    });
+  }, []);
 
   const reload = useCallback(async () => {
     setLoading(true);
-    setError(null);
-    try {
-      setOrders(await new OrderHistoryRepository(telegram.webApp).getAll());
-    } catch (nextError) {
-      setError(nextError);
-    } finally {
-      setLoading(false);
-    }
-  }, [telegram.webApp]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setError(null);
-      try {
-        const nextOrders = await new OrderHistoryRepository(telegram.webApp).getAll();
-        if (!cancelled) setOrders(nextOrders);
-      } catch (nextError) {
-        if (!cancelled) setError(nextError);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, [telegram.webApp]);
-
-  const addOrder = useCallback((order) => {
-    setCurrentOrder(order);
-    setOrders((previous) => [order, ...previous.filter((item) => item.id !== order.id)]);
+    setOrders(loadOrders());
+    setLoading(false);
   }, []);
 
   const value = useMemo(
-    () => ({ orders, currentOrder, addOrder, reload, loading, error }),
-    [orders, currentOrder, addOrder, reload, loading, error],
+    () => ({ orders, currentOrder, addOrder, reload, loading, error: null }),
+    [orders, currentOrder, addOrder, reload, loading],
   );
 
   return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;

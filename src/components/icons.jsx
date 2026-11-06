@@ -164,3 +164,71 @@ export function InboxIcon(props) {
     </Svg>
   );
 }
+
+export function FishIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M2.5 12s3.5-6 9.5-6c4.5 0 8 3.4 9.5 6-1.5 2.6-5 6-9.5 6-6 0-9.5-6-9.5-6z" />
+      <path d="M21.5 12c1.2-1.5 1.2-4.5 0-6" />
+      <circle cx="8" cy="11" r="0.9" fill="currentColor" stroke="none" />
+      <path d="M6 17.5L3 20.5M6 6.5L3 3.5" />
+    </Svg>
+  );
+}
+
+export function CartIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 5h2l1.7 9.5a1.5 1.5 0 001.5 1.2h6.9a1.5 1.5 0 001.5-1.2L19 8H6.4" />
+      <circle cx="10" cy="19.5" r="1.4" />
+      <circle cx="16" cy="19.5" r="1.4" />
+    </Svg>
+  );
+}
+
+export function PhoneIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M6.5 3.5h3l1.5 4-2 1.5a12.5 12.5 0 006 6l1.5-2 4 1.5v3a1.8 1.8 0 01-2 1.8C11 18.6 5.4 13 4.7 5.5a1.8 1.8 0 011.8-2z" />
+    </Svg>
+  );
+}
+
+export function TruckIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M2.5 6.5h11v10h-11z" />
+      <path d="M13.5 10h4l3 3v3.5h-7" />
+      <circle cx="6.5" cy="17.5" r="1.7" />
+      <circle cx="16.5" cy="17.5" r="1.7" />
+    </Svg>
+  );
+}
+
+export function TimerIcon(props) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="13" r="7.5" />
+      <path d="M12 9.5V13l2.5 1.7M9.5 2.5h5M12 2.5v3" />
+    </Svg>
+  );
+}
+
+export function SnowflakeIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9" />
+      <path d="M12 6l2-2M12 6l-2-2M12 18l2 2M12 18l-2 2" />
+    </Svg>
+  );
+}
+
+export function AlertIcon(props) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 8v4.5" />
+      <circle cx="12" cy="15.8" r="0.9" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}

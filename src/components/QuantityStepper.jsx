@@ -11,10 +11,15 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, compact = 
     onChange(next);
   };
 
+  const side = [
+    "flex h-full items-center justify-center text-ink-soft transition-colors active:scale-90",
+    compact ? "w-8" : "w-10",
+  ];
+
   return (
     <div
       className={[
-        "flex shrink-0 items-center rounded-[10px] border border-line bg-card",
+        "flex shrink-0 items-center rounded-xl border border-line bg-card shadow-soft",
         compact ? "h-8" : "h-10",
       ].join(" ")}
     >
@@ -24,9 +29,9 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, compact = 
         disabled={value <= min}
         aria-label="Убрать одну порцию"
         className={[
-          "flex h-full items-center justify-center rounded-l-[10px] text-ink/70 transition-colors",
-          compact ? "w-8" : "w-10",
-          value <= min ? "opacity-30" : "hover:bg-canvas active:bg-line/60",
+          ...side,
+          "rounded-l-xl",
+          value <= min ? "opacity-30" : "hover:bg-canvas",
         ].join(" ")}
       >
         <MinusIcon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
@@ -34,7 +39,7 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, compact = 
 
       <span
         className={[
-          "min-w-7 text-center font-semibold tabular-nums text-ink",
+          "min-w-7 text-center font-extrabold tabular-nums text-ink",
           compact ? "text-[12px]" : "text-[14px]",
         ].join(" ")}
       >
@@ -45,11 +50,7 @@ export function QuantityStepper({ value, onChange, min = 0, max = 99, compact = 
         type="button"
         onClick={() => step(1)}
         aria-label="Добавить порцию"
-        className={[
-          "flex h-full items-center justify-center rounded-r-[10px] text-ink/70 transition-colors",
-          compact ? "w-8" : "w-10",
-          "hover:bg-canvas active:bg-line/60",
-        ].join(" ")}
+        className={[...side, "rounded-r-xl hover:bg-canvas"].join(" ")}
       >
         <PlusIcon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
       </button>

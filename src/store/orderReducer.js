@@ -1,39 +1,37 @@
 import { createContext } from "react";
+import { COLLECTION } from "../data/catalog";
 
-export const STORAGE_KEY = "smarttable:order";
-
-function defaultDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 14);
-
-  const pad = (value) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
+export const STORAGE_KEY = "severny-privoz:order";
 
 export const initialOrder = {
-  purpose: "birthday",
-  date: defaultDate(),
-  time: "18:00",
-  guests: 10,
-  address: "",
+  // cart: { [productId]: quantity } — для кг это десятые доли кг? Нет:
+  // для кг храним шаг по 0.5 кг как число (0.5, 1, 1.5...), для шт/упак — целые.
+  cart: {},
+  customerName: "",
   phone: "",
+  zoneId: "",
+  street: "",
+  house: "",
+  apartment: "",
   comment: "",
-  styleId: 1,
-  dishes: {},
-  satietyMode: "perPerson",
-  formatId: 3,
-  payMethod: "card",
+  windowId: "",
+  agreed: false,
+  // Снимок позиций на момент подтверждения (ТЗ п.9): name, price, unit, qty
+  items: [],
+  itemsTotal: 0,
+  deliveryPrice: 0,
+  deliveryMode: "", // fixed | manager
+  total: 0,
   orderNo: "",
-  paidAt: "",
+  collectionId: null,
+  createdAt: "",
 };
 
+let seq = 123;
 export function generateOrderNo() {
-  return String(1000 + Math.floor(Math.random() * 9000));
-}
-
-export function currentTime(base = new Date()) {
-  const pad = (value) => String(value).padStart(2, "0");
-  return `${pad(base.getHours())}:${pad(base.getMinutes())}`;
+  // Мок: SP-<год>-<номер>. Позже номер назначает сервер.
+  seq += 1 + Math.floor(Math.random() * 3);
+  return `SP-${new Date().getFullYear()}-${String(seq).padStart(6, "0")}`;
 }
 
 export function orderReducer(state, action) {
@@ -41,24 +39,31 @@ export function orderReducer(state, action) {
     case "setField":
       return { ...state, [action.field]: action.value };
 
-    case "setDishQuantity": {
-      const { id, quantity } = action;
-      const dishes = { ...state.dishes };
-      if (quantity <= 0) delete dishes[id];
-      else dishes[id] = quantity;
-      return { ...state, dishes };
+    // qty для kg — с шагом 0.5, для pc/pack — целые.
+    case "setQty": {
+      const cart = { ...state.cart };
+      if (!action.qty || action.qty <= 0) delete cart[action.id];
+      else cart[action.id] = action.qty;
+      return { ...state, cart };
     }
-
-    case "pay":
-      return {
-        ...state,
-        payMethod: action.method ?? state.payMethod,
-        orderNo: action.orderNo ?? state.orderNo ?? generateOrderNo(),
-        paidAt: action.paidAt ?? currentTime(),
-      };
 
     case "reset":
       return { ...initialOrder };
+
+    case "submit": {
+      const { items, itemsTotal, deliveryPrice, deliveryMode, total, orderNo } = action;
+      return {
+        ...state,
+        items,
+        itemsTotal,
+        deliveryPrice,
+        deliveryMode,
+        total,
+        orderNo,
+        collectionId: COLLECTION.id,
+        createdAt: new Date().toISOString(),
+      };
+    }
 
     default:
       return state;

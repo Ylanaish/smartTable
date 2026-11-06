@@ -1,78 +1,93 @@
 import { useNavigate } from "react-router-dom";
-import background from "../assets/intro-page-background.jpg";
-import cloche from "../assets/icons/cloche.png";
-import rushIcon from "../assets/icons/rush.png";
-import allIcon from "../assets/icons/all.png";
-import priceIcon from "../assets/icons/price-tag.png";
-import AppHeader from "../components/AppHeader";
+import PageShell from "../components/PageShell";
 import Button from "../components/Button";
-import Advantage from "../components/Advantage";
-
-const advantages = [
-  { icon: rushIcon, title: "Быстро", subtitle: "(3–4 минуты)" },
-  { icon: allIcon, title: "Всё в одном", subtitle: "(доставка + сервировка)" },
-  { icon: priceIcon, title: "Прозрачная цена", subtitle: "(без скрытых платежей)" },
-];
+import { COLLECTION } from "../data/catalog";
+import { FishIcon, MapPinIcon, TruckIcon } from "../components/icons";
 
 export default function IntroPage() {
   const navigate = useNavigate();
 
+  const advantages = [
+    {
+      Icon: FishIcon,
+      title: "Свежий улов",
+      text: "Рыба и морепродукты напрямую с Мурманска и Дальнего Востока",
+      tone: "bg-sea-soft text-sea-deep",
+    },
+    {
+      Icon: TruckIcon,
+      title: "Доставка на дом",
+      text: "Павлово, Тумботино, Ворсма, Богородск — по маршрутам и интервалам",
+      tone: "bg-accent-soft text-accent-dark",
+    },
+    {
+      Icon: MapPinIcon,
+      title: "Прозрачные заявки",
+      text: "Номер заявки, состав и сумма — сразу после оформления",
+      tone: "bg-[#ede9fe] text-[#6d28d9]",
+    },
+  ];
+
   return (
-    <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-[520px] flex-col overflow-hidden bg-black text-white">
-      <img
-        src={background}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 -z-30 h-full w-full object-cover object-center"
-      />
-      <div className="absolute inset-0 -z-20 bg-black/30" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/75 via-black/15 to-black/85" />
-
-      <AppHeader title="Telegram" subtitle="Умный Стол" theme="light" />
-
-      <main className="relative flex flex-1 flex-col items-center px-5 pb-5 text-center sm:px-7">
-        <div className="mt-[6vh] flex flex-col items-center sm:mt-[9vh]">
-          <img src={cloche} alt="" className="h-12 w-[68px] object-contain drop-shadow-lg" />
-
-          <h1 className="mt-2 font-display text-[clamp(30px,9vw,42px)] leading-none font-medium tracking-[0.06em] text-white uppercase drop-shadow-lg">
-            Умный стол
-          </h1>
-
-          <p className="mt-4 max-w-[260px] text-[clamp(13px,3.6vw,15px)] leading-[1.5] font-medium text-white/95 drop-shadow-md">
-            Банкетная доставка
+    <PageShell headerOnDark contentClassName="flex flex-col">
+      {/* Хиро на градиенте «северного моря» с мягкой волной к подложке */}
+      <div className="-mx-4 -mt-[62px] bg-hero relative px-6 pt-16 pb-14 text-white sm:-mx-6 sm:px-8">
+        <div
+          className="animate-fade-up"
+          style={{ animationDelay: "60ms" }}
+        >
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/12 text-white">
+            <FishIcon className="h-7 w-7" />
+          </span>
+          <h1 className="mt-5 text-[clamp(30px,8vw,38px)] leading-[1.05] font-extrabold tracking-[-0.02em]">
+            Северный
             <br />
-            и сервировка под ключ
+            привоз
+          </h1>
+          <p className="mt-3 max-w-[300px] text-[14.5px] leading-snug font-medium text-white/75">
+            Свежая рыба и морепродукты с доставкой домой. Оформите заказ к текущему привозу — остальное
+            мы возьмём на себя.
           </p>
         </div>
 
-        <div className="mt-auto w-full pt-10">
-          <ul className="flex flex-col gap-3.5 text-left">
-            {advantages.map((item) => (
-              <li key={item.title}>
-                <Advantage
-                  iconSrc={item.icon}
-                  mainText={item.title}
-                  subText={item.subtitle}
-                />
-              </li>
-            ))}
-          </ul>
+        {/* Мягкая волна-переход к светлому фону */}
+        <svg
+          className="absolute -bottom-px left-0 h-6 w-full text-canvas"
+          viewBox="0 0 400 24"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M0 24h400V12c-66-12-133-12-200-4S66 20 0 12v12z" fill="currentColor" />
+        </svg>
+      </div>
 
-          <div className="mt-7">
-            <Button variant="light" icon="send" onClick={() => navigate("/event")}>
-              Накрыть умный стол
-            </Button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/home")}
-              className="mt-3.5 w-full py-2 text-center text-[12.5px] text-white/65 underline-offset-4 transition-colors hover:text-white/90 hover:underline"
+      <ul className="mt-5 flex flex-col gap-3">
+        {advantages.map(({ Icon, title, text, tone }, i) => (
+          <li
+            key={title}
+            className="animate-fade-up flex items-start gap-3.5 rounded-card bg-card p-4 shadow-soft"
+            style={{ animationDelay: `${160 + i * 80}ms` }}
+          >
+            <span
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone}`}
             >
-              Мои заказы и каталог блюд
-            </button>
-          </div>
-        </div>
-      </main>
-    </div>
+              <Icon className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-[14.5px] font-bold tracking-tight text-ink">{title}</span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-muted">{text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex-1" />
+
+      <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-safe sm:-mx-6 sm:px-6">
+        <Button variant="accent" onClick={() => navigate("/collection")}>
+          Текущий привоз — {COLLECTION.title.replace("Северный привоз ", "")}
+        </Button>
+      </div>
+    </PageShell>
   );
 }

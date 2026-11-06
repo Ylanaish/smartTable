@@ -1,85 +1,78 @@
-import { DISHES, DISH_CATEGORIES, FORMATS, PREPAYMENT_PERCENT, STYLES } from "../data/catalog";
+import { DELIVERY_ZONES, PRODUCTS, getZone } from "../data/catalog";
 
-export const SATIETY_OPTIMAL_MIN = 70;
-export const SATIETY_OPTIMAL_MAX = 85;
+export function cartLines(cart) {
+  return Object.entries(cart)
+    .map(([id, qty]) => {
+      const product = PRODUCTS.find((p) => p.id === Number(id));
+      return product ? { product, qty } : null;
+    })
+    .filter(Boolean);
+}
 
-// fullness у блюда — это «условные порции сытости» за одну подачу.
-// 1.0 единица на гостя — полностью сытый гость (100%).
-const FULL_MEAL_PER_GUEST = 1;
-// «На всю компанию» считаем от щедрого стола: 1.6 единицы на гостя.
-const BUFFET_PER_GUEST = 1.6;
+export function itemsTotal(cart) {
+  return cartLines(cart).reduce(
+    (sum, { product, qty }) => sum + product.price * qty,
+    0,
+  );
+}
 
-const priceFormatter = new Intl.NumberFormat("ru-RU");
+export function deliveryInfo(state) {
+  const zone = getZone(state.zoneId);
+  if (!zone) return { mode: null, price: 0, label: "" };
+  if (zone.mode === "fixed") {
+    return {
+      mode: "fixed",
+      price: zone.price,
+      label: `${zone.name} — ${zone.price} ₽`,
+    };
+  }
+  return { mode: "manager", price: null, label: `${zone.name} — рассчитает менеджер` };
+}
 
-export function formatPrice(value) {
-  return `${priceFormatter.format(Math.round(value))} ₽`;
+export function totalOf(state) {
+  const items = itemsTotal(state.cart);
+  const delivery = deliveryInfo(state);
+  return { items, delivery: delivery.price ?? 0, total: items + (delivery.price ?? 0) };
+}
+
+export function minOrderFor(zoneId) {
+  const zone = getZone(zoneId);
+  return zone?.minOrder ?? 0;
+}
+
+export function zoneOptions() {
+  return DELIVERY_ZONES;
+}
+
+export function isValidPhone(phone) {
+  return /^\+?[\d\s()-]{10,18}$/.test(phone.trim());
+}
+
+export function formatPhoneInput(value) {
+  const digits = value.replace(/\D/g, "").replace(/^8/, "7").slice(0, 11);
+  if (!digits) return "";
+  const lead = digits[0] === "7" ? "7" : `7${digits}`.slice(0, 11);
+  const d = lead.padEnd(11, "_").split("");
+  return `+${d[0]} (${d.slice(1, 4).join("")}) ${d.slice(4, 7).join("")}-${d
+    .slice(7, 9)
+    .join("")}-${d.slice(9, 11).join("")}`
+    .replace(/[_)]+$/g, (m) => (m.includes(")") ? ")" : ""))
+    .trimEnd();
 }
 
 export function formatDate(iso) {
   if (!iso) return "";
-  const [year, month, day] = iso.split("-").map(Number);
-  if (!year || !month || !day) return iso;
+  const date = new Date(iso);
+  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+}
 
-  return new Date(year, month - 1, day).toLocaleDateString("ru-RU", {
+export function formatDateTime(iso) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return date.toLocaleString("ru-RU", {
     day: "numeric",
-    month: "long",
-    year: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
-}
-
-export function getStyle(id, catalog) {
-  return (catalog?.styles ?? STYLES).find((style) => style.id === Number(id)) ?? null;
-}
-
-export function getDish(id, catalog) {
-  return (catalog?.dishes ?? DISHES).find((dish) => dish.id === Number(id)) ?? null;
-}
-
-export function getCategoryLabel(id, catalog) {
-  return (catalog?.categories ?? DISH_CATEGORIES).find((category) => category.id === Number(id))?.label ?? "";
-}
-
-export function getFormat(id, catalog) {
-  return (catalog?.formats ?? FORMATS).find((format) => format.id === Number(id)) ?? null;
-}
-
-export function getDishesCount(dishes) {
-  return Object.values(dishes).reduce((sum, qty) => sum + qty, 0);
-}
-
-export function getDishesPrice(dishes, catalog) {
-  return Object.entries(dishes).reduce((sum, [id, qty]) => {
-    const dish = getDish(id, catalog);
-    return sum + (dish ? dish.price * qty : 0);
-  }, 0);
-}
-
-export function getFullness(dishes, catalog) {
-  return Object.entries(dishes).reduce((sum, [id, qty]) => {
-    const dish = getDish(id, catalog);
-    return sum + (dish ? dish.fullness * qty : 0);
-  }, 0);
-}
-
-export function getSatiety(dishes, guests, perPerson, catalog) {
-  const fullness = getFullness(dishes, catalog);
-  if (fullness === 0) return 0;
-
-  const people = Math.max(guests, 1);
-  const target = people * (perPerson ? FULL_MEAL_PER_GUEST : BUFFET_PER_GUEST);
-
-  return Math.round(Math.min(100, (fullness / target) * 100));
-}
-
-export function getServicePrice(formatId, guests, catalog) {
-  const format = getFormat(formatId, catalog);
-  return format ? format.priceFrom * Math.max(guests, 1) : 0;
-}
-
-export function getOrderTotal({ dishes, formatId, guests }, catalog) {
-  return getDishesPrice(dishes, catalog) + getServicePrice(formatId, guests, catalog);
-}
-
-export function getPrepayment(total) {
-  return Math.round((total * PREPAYMENT_PERCENT) / 100);
 }
