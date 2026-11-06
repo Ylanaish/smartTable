@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import Button from "../components/Button";
-import { COLLECTION } from "../data/catalog";
+import { useSupply } from "../store/supplyContext";
 import { FishIcon, MapPinIcon, TruckIcon } from "../components/icons";
 
 export default function IntroPage() {
   const navigate = useNavigate();
+  const { supply } = useSupply();
 
   const advantages = [
     {
@@ -85,7 +86,9 @@ export default function IntroPage() {
 
       <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-safe sm:-mx-6 sm:px-6">
         <Button variant="accent" onClick={() => navigate("/collection")}>
-          Текущий привоз — {COLLECTION.title.replace("Северный привоз ", "")}
+          {supply?.title
+            ? supply.title.replace("Северный привоз", "Текущий привоз")
+            : "Текущий привоз"}
         </Button>
       </div>
     </PageShell>

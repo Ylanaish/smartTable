@@ -2,7 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import Button from "../components/Button";
 import ProductVisual from "../components/ProductVisual";
-import { getProduct, formatPrice, formatUnitPrice, unitLabel } from "../data/catalog";
+import { formatPrice, formatUnitPrice, unitLabel } from "../data/catalog";
+import { useSupply } from "../store/supplyContext";
 import { useOrder } from "../hooks/useOrder";
 import { useTelegram } from "../hooks/useTelegram";
 import { SnowflakeIcon, MinusIcon, PlusIcon } from "../components/icons";
@@ -12,9 +13,10 @@ export default function ProductPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
-  const product = getProduct(productId);
+  const { supply, loading } = useSupply();
+  const product = supply?.products.find((p) => p.id === Number(productId));
 
-  if (!product) {
+  if (!loading && !product) {
     return (
       <PageShell docTitle="Товар не найден" showNav>
         <div className="mt-8 rounded-card bg-card px-6 py-12 text-center shadow-soft">
@@ -23,6 +25,14 @@ export default function ProductPage() {
             <Button onClick={() => navigate("/collection")}>К привозу</Button>
           </div>
         </div>
+      </PageShell>
+    );
+  }
+
+  if (loading) {
+    return (
+      <PageShell docTitle="Товар" showNav headerBack>
+        <div className="mt-2 h-44 animate-pulse rounded-card shadow-soft" aria-busy="true" />
       </PageShell>
     );
   }
@@ -40,6 +50,8 @@ export default function ProductPage() {
     const next = dir < 0 ? Math.max(0, +(qty - step).toFixed(2)) : qty + step;
     setQty(next);
   };
+
+  const isFrozen = product.storage?.startsWith("заморозка");
 
   return (
     <PageShell
@@ -67,36 +79,50 @@ export default function ProductPage() {
           <span className="rounded-full bg-sea-soft px-3 py-1 text-[12px] font-bold text-sea-deep">
             {formatUnitPrice(product)}
           </span>
-          <span className="rounded-full bg-canvas px-3 py-1 text-[12px] font-semibold text-muted">
-            {product.portion}
-          </span>
-          {product.storage.startsWith("заморозка") ? (
+          {product.portion && (
+            <span className="rounded-full bg-canvas px-3 py-1 text-[12px] font-semibold text-muted">
+              {product.portion}
+            </span>
+          )}
+          {isFrozen ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-canvas px-3 py-1 text-[12px] font-semibold text-muted">
               <SnowflakeIcon className="h-3.5 w-3.5" /> заморозка
             </span>
           ) : (
-            <span className="rounded-full bg-accent-soft px-3 py-1 text-[12px] font-semibold text-accent-dark">
-              охлаждённое
-            </span>
+            product.storage && (
+              <span className="rounded-full bg-accent-soft px-3 py-1 text-[12px] font-semibold text-accent-dark">
+                охлаждённое
+              </span>
+            )
           )}
         </div>
 
-        <dl className="mt-4 flex flex-col gap-2.5 rounded-card bg-card p-4 text-[13.5px] shadow-soft">
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Происхождение</dt>
-            <dd className="font-bold text-ink">{product.origin}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Хранение</dt>
-            <dd className="text-right font-bold text-ink">{product.storage}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">Фасовка</dt>
-            <dd className="font-bold text-ink">
-              {isWeight ? "весовой, шаг 0.5 кг" : product.portion}
-            </dd>
-          </div>
-        </dl>
+        {product.description && (
+          <p className="mt-3 text-[13.5px] leading-snug text-muted">{product.description}</p>
+        )}
+
+        {(product.origin || product.storage) && (
+          <dl className="mt-4 flex flex-col gap-2.5 rounded-card bg-card p-4 text-[13.5px] shadow-soft">
+            {product.origin && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted">Происхождение</dt>
+                <dd className="font-bold text-ink">{product.origin}</dd>
+              </div>
+            )}
+            {product.storage && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted">Хранение</dt>
+                <dd className="text-right font-bold text-ink">{product.storage}</dd>
+              </div>
+            )}
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">Фасовка</dt>
+              <dd className="font-bold text-ink">
+                {isWeight ? "весовой, шаг 0.5 кг" : (product.portion ?? "штучно")}
+              </dd>
+            </div>
+          </dl>
+        )}
       </div>
 
       {isWeight && (

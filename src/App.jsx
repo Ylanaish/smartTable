@@ -1,6 +1,7 @@
 import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import OrderProvider from "./store/OrderProvider";
 import HistoryProvider from "./store/HistoryProvider";
+import SupplyProvider from "./store/SupplyProvider";
 import IntroPage from "./pages/IntroPage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
@@ -29,9 +30,11 @@ const router = createHashRouter([
 function App() {
   return (
     <OrderProvider>
-      <HistoryProvider>
-        <RouterProvider router={router} />
-      </HistoryProvider>
+      <SupplyProvider>
+        <HistoryProvider>
+          <RouterProvider router={router} />
+        </HistoryProvider>
+      </SupplyProvider>
     </OrderProvider>
   );
 }

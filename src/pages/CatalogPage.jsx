@@ -2,31 +2,50 @@ import { useMemo, useState } from "react";
 import PageShell from "../components/PageShell";
 import CollectionTimer from "../components/CollectionTimer";
 import ProductCard from "../components/ProductCard";
-import { COLLECTION, CATEGORIES, PRODUCTS } from "../data/catalog";
+import { useSupply } from "../store/supplyContext";
 import { useOrder } from "../hooks/useOrder";
 import { cartLines, itemsTotal } from "../store/selectors";
 import { formatPrice } from "../data/catalog";
 import { CartIcon, CalendarIcon } from "../components/icons";
 
-const deliveryLabel = (isoDate) =>
-  new Date(isoDate).toLocaleDateString("ru-RU", {
+const deliveryLabel = (date) =>
+  date.toLocaleDateString("ru-RU", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
 
+function CatalogSkeleton() {
+  return (
+    <ul className="mt-3 flex flex-col gap-2.5" aria-busy="true" aria-label="Загрузка привоза">
+      {[0, 1, 2].map((i) => (
+        <li key={i} className="h-[76px] animate-pulse rounded-card bg-card shadow-soft" />
+      ))}
+    </ul>
+  );
+}
+
 export default function CatalogPage() {
   const { order, dispatch } = useOrder();
+  const { supply, loading, error } = useSupply();
   const [category, setCategory] = useState("all");
 
-  const closed = COLLECTION.status !== "open";
+  const products = useMemo(() => supply?.products ?? [], [supply]);
+  const closed = supply?.closeAt ? supply.closeAt <= new Date() : false;
+
+  const categories = useMemo(
+    () =>
+      [...new Set(products.map((p) => p.category))].filter(Boolean).map((name) => ({
+        id: name,
+        label: name,
+      })),
+    [products],
+  );
 
   const visible = useMemo(
     () =>
-      category === "all"
-        ? PRODUCTS
-        : PRODUCTS.filter((p) => p.category === category),
-    [category],
+      category === "all" ? products : products.filter((p) => p.category === category),
+    [category, products],
   );
 
   const lines = cartLines(order.cart);
@@ -35,6 +54,9 @@ export default function CatalogPage() {
   const onAdd = (product, qty) => {
     dispatch({ type: "setQty", id: product.id, qty: (order.cart[product.id] ?? 0) + qty });
   };
+
+  const noSupply = !loading && (supply == null || supply.supplyId == null);
+  const showContent = !loading && !error && !noSupply;
 
   return (
     <PageShell
@@ -51,25 +73,29 @@ export default function CatalogPage() {
             Текущий привоз
           </span>
           <h1 className="mt-3 text-[clamp(23px,6.4vw,30px)] leading-tight font-extrabold tracking-[-0.02em]">
-            {COLLECTION.title.replace("Северный привоз", "Привоз")}
+            {loading ? "Текущий привоз" : (supply?.title ?? "Текущий привоз").replace("Северный привоз", "Привоз")}
           </h1>
-          <p className="mt-2 max-w-[340px] text-[13px] leading-snug font-medium text-white/70">
-            {COLLECTION.description}
-          </p>
+          {supply?.description && (
+            <p className="mt-2 max-w-[340px] text-[13px] leading-snug font-medium text-white/70">
+              {supply.description}
+            </p>
+          )}
         </div>
 
         <div className="mt-4 animate-fade-up" style={{ animationDelay: "80ms" }}>
-          {!closed && <CollectionTimer closesAt={COLLECTION.closesAt} closed={closed} />}
+          {showContent && <CollectionTimer closesAt={supply.closeAt ?? 0} closed={closed} />}
         </div>
 
         <div
           className="mt-3.5 flex animate-fade-up items-center gap-2"
           style={{ animationDelay: "140ms" }}
         >
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white/85">
-            <CalendarIcon className="h-3.5 w-3.5" />
-            Доставка — {deliveryLabel(COLLECTION.deliveryDate)}
-          </span>
+          {supply?.deliveryDate && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white/85">
+              <CalendarIcon className="h-3.5 w-3.5" />
+              Доставка — {deliveryLabel(supply.deliveryDate)}
+            </span>
+          )}
         </div>
 
         {/* Мягкая волна-переход к подложке */}
@@ -83,20 +109,42 @@ export default function CatalogPage() {
         </svg>
       </section>
 
-      {closed ? (
+      {loading && <CatalogSkeleton />}
+
+      {error && (
+        <div className="mt-6 rounded-card bg-card px-6 py-8 text-center shadow-soft">
+          <p className="text-[15px] font-bold text-ink">Не удалось загрузить привоз</p>
+          <p className="mt-1.5 text-[13px] leading-snug text-muted">
+            Проверьте соединение и попробуйте ещё раз.
+          </p>
+        </div>
+      )}
+
+      {noSupply && (
+        <div className="mt-6 rounded-card bg-card px-6 py-10 text-center shadow-soft">
+          <p className="text-[15px] font-bold text-ink">Активных привозов нет</p>
+          <p className="mt-1.5 text-[13px] leading-snug text-muted">
+            Дата следующего привоза появится в боте.
+          </p>
+        </div>
+      )}
+
+      {showContent && closed && (
         <div className="mt-6 rounded-card bg-card px-6 py-10 text-center shadow-soft">
           <p className="text-[15px] font-bold text-ink">Сбор закрыт</p>
           <p className="mt-1.5 text-[13px] leading-snug text-muted">
             Новые заявки больше не принимаются. Дата следующего привоза появится в боте.
           </p>
         </div>
-      ) : (
+      )}
+
+      {showContent && !closed && (
         <>
           <div
             className="scrollbar-none -mx-4 mt-3 flex animate-fade-up gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6"
             style={{ animationDelay: "180ms" }}
           >
-            {[{ id: "all", label: "Всё" }, ...CATEGORIES].map((cat) => (
+            {[{ id: "all", label: "Всё" }, ...categories].map((cat) => (
               <button
                 key={cat.id}
                 type="button"
@@ -127,10 +175,16 @@ export default function CatalogPage() {
               </li>
             ))}
           </ul>
+
+          {visible.length === 0 && (
+            <p className="mt-6 rounded-card bg-card px-6 py-8 text-center text-[13.5px] font-semibold text-muted shadow-soft">
+              В этой категории пока нет товаров
+            </p>
+          )}
         </>
       )}
 
-      {lines.length > 0 && !closed && (
+      {lines.length > 0 && showContent && !closed && (
         <div className="sticky bottom-0 z-20 -mx-4 mt-4 px-4 pt-3 pb-safe sm:-mx-6 sm:px-6">
           <button
             type="button"
