@@ -20,8 +20,10 @@ async function getToken(webApp, force = false) {
 }
 
 export async function apiFetch(path, options = {}, webApp) {
-  let token = await getToken(webApp);
+  // let token = await getToken(webApp);
+  let token = "some-token-example";
   let response;
+  console.log(API_BASE_URL);
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const headers = new Headers(options.headers);
