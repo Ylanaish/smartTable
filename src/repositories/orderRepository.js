@@ -31,4 +31,23 @@ export default class OrderRepository {
     }
     return response.json();
   }
+
+  // GET /orders — список заявок пользователя.
+  // Возвращает [{ id, order_number, status, datetime, total_amount }]
+  async getAll() {
+    const response = await apiFetch("/orders/", {}, this.webApp);
+    if (!response.ok) {
+      throw new Error(`Не удалось загрузить заявки: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  // GET /orders/{id} — детальная карточка заявки.
+  async getById(orderId) {
+    const response = await apiFetch(`/orders/${orderId}`, {}, this.webApp);
+    if (!response.ok) {
+      throw new Error(`Не удалось загрузить заявку: ${response.status}`);
+    }
+    return response.json();
+  }
 }

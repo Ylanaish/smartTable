@@ -1,31 +1,52 @@
-import { useCallback, useMemo, useState } from "react";
-import { HistoryContext, loadOrders, saveOrders } from "./HistoryContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { HistoryContext } from "./HistoryContext";
+import OrderRepository from "../repositories/orderRepository";
+import { useTelegram } from "../hooks/useTelegram";
 
-// Мок-версия истории заявок на localStorage. Позже заменяется загрузкой с сервера.
+// История заявок берётся с сервера, localStorage источником больше не является.
 export default function HistoryProvider({ children }) {
-  const [orders, setOrders] = useState(loadOrders);
-  const [currentOrder, setCurrentOrder] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const telegram = useTelegram();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const addOrder = useCallback((order) => {
-    const record = { ...order, id: order.orderNo, status: "new", createdAt: new Date().toISOString() };
-    setCurrentOrder(record);
-    setOrders((previous) => {
-      const next = [record, ...previous.filter((item) => item.id !== record.id)];
-      saveOrders(next);
-      return next;
-    });
-  }, []);
+  // Первая загрузка — как в SupplyProvider: setState только из колбэков.
+  useEffect(() => {
+    let cancelled = false;
 
+    new OrderRepository(telegram.webApp)
+      .getAll()
+      .then((next) => {
+        if (!cancelled) setOrders(next);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [telegram.webApp]);
+
+  // Императивное обновление: из CheckoutPage после оформления и кнопкой «Повторить».
   const reload = useCallback(async () => {
     setLoading(true);
-    setOrders(loadOrders());
-    setLoading(false);
-  }, []);
+    setError(null);
+    try {
+      setOrders(await new OrderRepository(telegram.webApp).getAll());
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [telegram.webApp]);
 
   const value = useMemo(
-    () => ({ orders, currentOrder, addOrder, reload, loading, error: null }),
-    [orders, currentOrder, addOrder, reload, loading],
+    () => ({ orders, reload, loading, error }),
+    [orders, reload, loading, error],
   );
 
   return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;

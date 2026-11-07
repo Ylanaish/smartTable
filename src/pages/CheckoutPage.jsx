@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
   const { supply } = useSupply();
-  const { addOrder } = useOrders();
+  const { reload } = useOrders();
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -103,6 +103,7 @@ export default function CheckoutPage() {
           quantity: qty,
         })),
       });
+      // Снимок позиций на момент подтверждения (ТЗ п.9): name, price, unit, qty
       const snapshot = lines.map(({ product, qty }) => ({
         productId: product.id,
         name: product.name,
@@ -119,26 +120,8 @@ export default function CheckoutPage() {
         total: zone?.mode === "fixed" ? total : null,
         orderNo: created.order_number,
       });
-      addOrder({
-        orderNo: created.order_number,
-        collectionId: supply?.supplyId ?? null,
-        customerName: order.customerName,
-        phone: order.phone,
-        address: {
-          zoneId: order.zoneId,
-          zoneName: zone?.name,
-          street: order.street,
-          house: order.house,
-          apartment: order.apartment,
-          comment: order.comment,
-        },
-        windowId: order.windowId,
-        items: snapshot,
-        itemsTotal,
-        deliveryMode,
-        deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
-        total: zone?.mode === "fixed" ? total : null,
-      });
+      // История заявок теперь живёт на сервере — обновляем её перезагрузкой.
+      reload();
       telegram.notification("success");
       navigate("/done");
     } catch (e) {

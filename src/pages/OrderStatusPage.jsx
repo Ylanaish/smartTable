@@ -1,20 +1,25 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import Button from "../components/Button";
 import StatusBadge from "../components/StatusBadge";
-import { useOrders } from "../hooks/useOrders";
+import OrderRepository from "../repositories/orderRepository";
 import { useTelegram } from "../hooks/useTelegram";
 import { formatDateTime } from "../store/selectors";
 import { PhoneIcon, ReceiptIcon, CheckIcon } from "../components/icons";
 import { unitLabel } from "../data/catalog";
 
 // Порядок этапов жизни заявки для вертикального таймлайна.
+// Ключи совпадают с OrderStatus на бэкенде.
 const TIMELINE = [
   { status: "new", label: "Заявка создана" },
+  { status: "paid", label: "Оплачена" },
   { status: "confirmed", label: "Подтверждена менеджером" },
-  { status: "packing", label: "Комплектуется" },
-  { status: "delivery", label: "Курьер в пути" },
-  { status: "delivered", label: "Доставлена" },
+  { status: "assembling", label: "Комплектуется" },
+  { status: "ready_for_pickup", label: "Готова к выдаче" },
+  { status: "in_delivery", label: "Курьер в пути" },
+  { status: "served", label: "Доставлена" },
+  { status: "completed", label: "Завершена" },
 ];
 
 const STATUS_INDEX = Object.fromEntries(TIMELINE.map((s, i) => [s.status, i]));
@@ -23,8 +28,41 @@ export default function OrderStatusPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const telegram = useTelegram();
-  const { orders } = useOrders();
-  const order = orders.find((o) => o.id === decodeURIComponent(orderId));
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    new OrderRepository(telegram.webApp)
+      .getById(orderId)
+      .then((next) => {
+        if (!cancelled) setOrder(next);
+      })
+      .catch(() => {
+        if (!cancelled) setOrder(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId, telegram.webApp]);
+
+  if (loading) {
+    return (
+      <PageShell docTitle="Заявка" showNav headerBack contentClassName="pb-4">
+        <div aria-busy="true" className="mt-4 flex animate-pulse flex-col gap-2.5">
+          <div className="h-7 w-2/3 rounded-full bg-canvas" />
+          <div className="h-44 rounded-card bg-canvas" />
+          <div className="h-32 rounded-card bg-canvas" />
+        </div>
+        <span className="sr-only">Загружаем заявку…</span>
+      </PageShell>
+    );
+  }
 
   if (!order) {
     return (
@@ -39,20 +77,19 @@ export default function OrderStatusPage() {
     );
   }
 
-  const a = order.address ?? {};
-  const canceled = order.status === "canceled";
+  const canceled = order.status === "cancelled";
   const doneIndex = canceled ? -1 : (STATUS_INDEX[order.status] ?? 0);
 
   return (
-    <PageShell docTitle={`Заявка ${order.orderNo}`} showNav headerBack contentClassName="pb-4">
+    <PageShell docTitle={`Заявка ${order.order_number}`} showNav headerBack contentClassName="pb-4">
       <div className="animate-fade-up" style={{ animationDelay: "50ms" }}>
         <div className="mt-2 flex flex-wrap items-center gap-2.5">
           <h1 className="text-[24px] font-extrabold tracking-[-0.02em] text-ink">
-            Заявка {order.orderNo}
+            Заявка {order.order_number}
           </h1>
           <StatusBadge status={order.status} />
         </div>
-        <p className="mt-1 text-[13px] font-medium text-muted">{formatDateTime(order.createdAt)}</p>
+        <p className="mt-1 text-[13px] font-medium text-muted">{formatDateTime(order.datetime)}</p>
       </div>
 
       {/* Таймлайн статусов: цвет + подпись + позиция, не только цвет */}
@@ -128,20 +165,20 @@ export default function OrderStatusPage() {
         <p className="text-[12px] font-extrabold tracking-widest text-sea uppercase">Состав</p>
         <ul className="mt-2.5 flex flex-col gap-1.5 text-[14px]">
           {order.items.map((item) => (
-            <li key={item.productId} className="flex justify-between gap-3">
+            <li key={item.product_id} className="flex justify-between gap-3">
               <span className="text-ink">
-                {item.name} — {item.qty} {unitLabel(item.unit)}
+                {item.product_title} — {item.quantity} {unitLabel(item.unit)}
               </span>
               <span className="shrink-0 font-bold tabular-nums text-ink">
-                {item.price != null ? `${(item.price * item.qty).toLocaleString("ru-RU")} ₽` : ""}
+                {(item.price_per_unit * item.quantity).toLocaleString("ru-RU")} ₽
               </span>
             </li>
           ))}
         </ul>
         <div className="mt-3 border-t border-line pt-3 text-[14px] font-extrabold text-ink">
           Итого:{" "}
-          {order.total != null
-            ? `${order.total.toLocaleString("ru-RU")} ₽`
+          {order.total_amount != null
+            ? `${order.total_amount.toLocaleString("ru-RU")} ₽`
             : "ожидает подтверждения менеджером"}
         </div>
       </section>
@@ -151,12 +188,8 @@ export default function OrderStatusPage() {
         style={{ animationDelay: "200ms" }}
       >
         <p className="text-[12px] font-extrabold tracking-widest text-sea uppercase">Доставка</p>
-        <p className="mt-2 font-medium text-ink">
-          {[a.zoneName, a.street && `ул. ${a.street}`, a.house && `д. ${a.house}`, a.apartment]
-            .filter(Boolean)
-            .join(", ")}
-        </p>
-        {a.comment && <p className="mt-1.5 text-muted">Комментарий: {a.comment}</p>}
+        <p className="mt-2 font-medium text-ink">{order.address}</p>
+        {order.comment && <p className="mt-1.5 text-muted">Комментарий: {order.comment}</p>}
       </section>
 
       <div

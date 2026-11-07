@@ -30,7 +30,7 @@ function Skeleton() {
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const { orders, loading } = useOrders();
+  const { orders, loading, error, reload } = useOrders();
 
   return (
     <PageShell docTitle="Мои заявки" showNav contentClassName="pb-4">
@@ -38,6 +38,18 @@ export default function OrdersPage() {
 
       {loading ? (
         <Skeleton />
+      ) : error ? (
+        <div className="mt-4 flex flex-col items-center rounded-card bg-card px-6 py-12 text-center shadow-soft">
+          <p className="text-[15px] font-bold text-ink">Не удалось загрузить заявки</p>
+          <p className="mt-1 max-w-[240px] text-[13px] leading-snug text-muted">
+            {error.message || "Проверьте соединение и попробуйте ещё раз."}
+          </p>
+          <div className="mt-5 w-full">
+            <Button variant="accent" onClick={() => reload()}>
+              Повторить
+            </Button>
+          </div>
+        </div>
       ) : orders.length === 0 ? (
         <div className="mt-4 flex animate-fade-up flex-col items-center rounded-card bg-card px-6 py-12 text-center shadow-soft">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-canvas text-muted">
@@ -68,18 +80,16 @@ export default function OrdersPage() {
               >
                 <span className="min-w-0 flex-1">
                   <span className="block text-[14.5px] font-bold tracking-tight text-ink">
-                    Заявка {order.orderNo}
+                    Заявка {order.order_number}
                   </span>
                   <span className="mt-0.5 block text-[12.5px] font-medium text-muted">
-                    {formatDateTime(order.createdAt)} ·{" "}
-                    {order.items.map((i) => i.name).slice(0, 2).join(", ")}
-                    {order.items.length > 2 ? ` +${order.items.length - 2}` : ""}
+                    {formatDateTime(order.datetime)}
                   </span>
                 </span>
                 <span className="flex shrink-0 flex-col items-end gap-1.5">
-                  {order.total != null ? (
+                  {order.total_amount != null ? (
                     <span className="text-[14px] font-extrabold text-ink tabular-nums">
-                      {order.total.toLocaleString("ru-RU")} ₽
+                      {order.total_amount.toLocaleString("ru-RU")} ₽
                     </span>
                   ) : (
                     <span className="text-[12px] font-medium text-muted">сумма уточняется</span>
