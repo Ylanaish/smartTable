@@ -46,6 +46,8 @@ export function orderReducer(state, action) {
       const { items, itemsTotal, deliveryPrice, deliveryMode, total, orderNo } = action;
       return {
         ...state,
+        // Корзину чистим здесь же: снимок ниже уже хранит состав для FinalPage.
+        cart: {},
         items,
         itemsTotal,
         deliveryPrice,
