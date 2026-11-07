@@ -48,8 +48,8 @@ export default function CatalogPage() {
     [category, products],
   );
 
-  const lines = cartLines(order.cart);
-  const total = itemsTotal(order.cart);
+  const lines = cartLines(order.cart, products);
+  const total = itemsTotal(order.cart, products);
 
   const onAdd = (product, qty) => {
     dispatch({ type: "setQty", id: product.id, qty: (order.cart[product.id] ?? 0) + qty });

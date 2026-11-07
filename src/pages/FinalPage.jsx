@@ -3,6 +3,7 @@ import PageShell from "../components/PageShell";
 import Button from "../components/Button";
 import { COLLECTION, getZone, unitLabel } from "../data/catalog";
 import { useOrder } from "../hooks/useOrder";
+import { useSupply } from "../store/supplyContext";
 import { useTelegram } from "../hooks/useTelegram";
 import { CheckIcon, PhoneIcon, ReceiptIcon } from "../components/icons";
 
@@ -10,6 +11,7 @@ export default function FinalPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order } = useOrder();
+  const { supply } = useSupply();
   const zone = getZone(order.zoneId);
 
   const fullAddress = [
@@ -66,7 +68,7 @@ export default function FinalPage() {
             <dt className="font-medium text-muted">Доставка</dt>
             <dd className="mt-0.5 font-bold text-ink">
               {order.deliveryMode === "fixed"
-                ? `${new Date(COLLECTION.deliveryDate).toLocaleDateString("ru-RU", {
+                ? `${(supply?.deliveryDate ?? COLLECTION.deliveryDate).toLocaleDateString("ru-RU", {
                     day: "numeric",
                     month: "long",
                   })}, выбранный интервал`

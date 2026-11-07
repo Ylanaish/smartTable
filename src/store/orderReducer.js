@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import { COLLECTION } from "../data/catalog";
 
 export const STORAGE_KEY = "severny-privoz:order";
 
@@ -27,13 +26,6 @@ export const initialOrder = {
   createdAt: "",
 };
 
-let seq = 123;
-export function generateOrderNo() {
-  // Мок: SP-<год>-<номер>. Позже номер назначает сервер.
-  seq += 1 + Math.floor(Math.random() * 3);
-  return `SP-${new Date().getFullYear()}-${String(seq).padStart(6, "0")}`;
-}
-
 export function orderReducer(state, action) {
   switch (action.type) {
     case "setField":
@@ -60,7 +52,7 @@ export function orderReducer(state, action) {
         deliveryMode,
         total,
         orderNo,
-        collectionId: COLLECTION.id,
+        collectionId: null,
         createdAt: new Date().toISOString(),
       };
     }

@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import ProductVisual from "../components/ProductVisual";
 import { formatPrice, unitLabel } from "../data/catalog";
 import { useOrder } from "../hooks/useOrder";
+import { useSupply } from "../store/supplyContext";
 import { useTelegram } from "../hooks/useTelegram";
 import { cartLines, itemsTotal } from "../store/selectors";
 import { COLLECTION } from "../data/catalog";
@@ -13,8 +14,9 @@ export default function CartPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
-  const lines = cartLines(order.cart);
-  const total = itemsTotal(order.cart);
+  const { supply } = useSupply();
+  const lines = cartLines(order.cart, supply?.products ?? []);
+  const total = itemsTotal(order.cart, supply?.products ?? []);
 
   const change = (product, delta) => {
     const current = order.cart[product.id] ?? 0;

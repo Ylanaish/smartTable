@@ -5,30 +5,49 @@ import Button from "../components/Button";
 import {
   DELIVERY_ZONES,
   DELIVERY_WINDOWS,
-  COLLECTION,
-  PRODUCTS,
   getZone,
   formatPrice,
 } from "../data/catalog";
+import OrderRepository from "../repositories/orderRepository";
 import { useOrder } from "../hooks/useOrder";
+import { useSupply } from "../store/supplyContext";
 import { useTelegram } from "../hooks/useTelegram";
 import { isValidPhone, minOrderFor } from "../store/selectors";
-import { generateOrderNo } from "../store/orderReducer";
 import { useOrders } from "../hooks/useOrders";
 import { AlertIcon, TruckIcon } from "../components/icons";
+
+function normalizePhone(phone) {
+  return `+${phone.replace(/\D/g, "")}`;
+}
+
+function fullAddress(zone, street, house, apartment) {
+  return [zone?.name, street && `ул. ${street}`, house && `д. ${house}`, apartment]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function buildComment(order) {
+  const parts = [order.customerName && `Имя: ${order.customerName}`];
+  const window = DELIVERY_WINDOWS.find((w) => w.id === order.windowId);
+  if (window) parts.push(`Интервал доставки: ${window.label}`);
+  if (order.comment.trim()) parts.push(order.comment.trim());
+  return parts.filter(Boolean).join(". ");
+}
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const telegram = useTelegram();
   const { order, dispatch } = useOrder();
+  const { supply } = useSupply();
   const { addOrder } = useOrders();
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const summaryRef = useRef(null);
 
   const lines = Object.entries(order.cart)
     .map(([id, qty]) => {
-      const product = PRODUCTS.find((p) => p.id === Number(id));
+      const product = (supply?.products ?? []).find((p) => p.id === Number(id));
       return product ? { product, qty } : null;
     })
     .filter(Boolean);
@@ -73,47 +92,61 @@ export default function CheckoutPage() {
     }
 
     setSubmitting(true);
-    // Мок отправки: позже здесь будет POST на сервер, номер вернёт сервер.
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    const snapshot = lines.map(({ product, qty }) => ({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      unit: product.unit,
-      qty,
-    }));
-    const orderNo = generateOrderNo();
-    dispatch({
-      type: "submit",
-      items: snapshot,
-      itemsTotal,
-      deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
-      deliveryMode,
-      total: zone?.mode === "fixed" ? total : null,
-      orderNo,
-    });
-    addOrder({
-      orderNo,
-      collectionId: COLLECTION.id,
-      customerName: order.customerName,
-      phone: order.phone,
-      address: {
-        zoneId: order.zoneId,
-        zoneName: zone?.name,
-        street: order.street,
-        house: order.house,
-        apartment: order.apartment,
-        comment: order.comment,
-      },
-      windowId: order.windowId,
-      items: snapshot,
-      itemsTotal,
-      deliveryMode,
-      deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
-      total: zone?.mode === "fixed" ? total : null,
-    });
-    telegram.notification("success");
-    navigate("/done");
+    setSubmitError(null);
+    try {
+      const created = await new OrderRepository(telegram.webApp).createOrder({
+        phone: normalizePhone(order.phone),
+        address: fullAddress(zone, order.street, order.house, order.apartment),
+        comment: buildComment(order),
+        items: lines.map(({ product, qty }) => ({
+          product_id: product.id,
+          quantity: qty,
+        })),
+      });
+      const snapshot = lines.map(({ product, qty }) => ({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        unit: product.unit,
+        qty,
+      }));
+      dispatch({
+        type: "submit",
+        items: snapshot,
+        itemsTotal,
+        deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
+        deliveryMode,
+        total: zone?.mode === "fixed" ? total : null,
+        orderNo: created.order_number,
+      });
+      addOrder({
+        orderNo: created.order_number,
+        collectionId: supply?.supplyId ?? null,
+        customerName: order.customerName,
+        phone: order.phone,
+        address: {
+          zoneId: order.zoneId,
+          zoneName: zone?.name,
+          street: order.street,
+          house: order.house,
+          apartment: order.apartment,
+          comment: order.comment,
+        },
+        windowId: order.windowId,
+        items: snapshot,
+        itemsTotal,
+        deliveryMode,
+        deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
+        total: zone?.mode === "fixed" ? total : null,
+      });
+      telegram.notification("success");
+      navigate("/done");
+    } catch (e) {
+      setSubmitError(e.message);
+      requestAnimationFrame(() => summaryRef.current?.focus());
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const field = (name) => [
@@ -128,11 +161,11 @@ export default function CheckoutPage() {
     <PageShell docTitle="Оформление заявки" contentClassName="pb-4">
       <h1 className="mt-3 text-[24px] font-extrabold tracking-[-0.02em] text-ink">Оформление заявки</h1>
       <p className="mt-1 text-[13px] font-medium text-muted">
-        Привоз №{COLLECTION.id} · {lines.length} поз. · товары {formatPrice(itemsTotal)}
+        Привоз {supply?.title ? `«${supply.title}»` : ""} · {lines.length} поз. · товары {formatPrice(itemsTotal)}
       </p>
 
       {/* Error summary: фокус после неудачного сабмита (UX-правило focusable error summary) */}
-      {Object.keys(errors).length > 0 && (
+      {(submitError || Object.keys(errors).length > 0) && (
         <div
           ref={summaryRef}
           tabIndex={-1}
@@ -141,17 +174,21 @@ export default function CheckoutPage() {
           className="mt-4 rounded-card border border-destructive-red/30 bg-destructive-red/5 px-4 py-3 shadow-soft outline-none"
         >
           <p id="error-title" className="text-[13.5px] font-extrabold text-destructive-red">
-            Проверьте форму:
+            {submitError ? "Не удалось отправить заявку" : "Проверьте форму:"}
           </p>
-          <ul className="mt-1.5 flex flex-col gap-1">
-            {Object.entries(errors).map(([key, message]) => (
-              <li key={key} className="text-[13px] text-destructive-red">
-                <a href={`#field-${key}`} className="underline decoration-dotted">
-                  {message}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {submitError ? (
+            <p className="mt-1.5 text-[13px] text-destructive-red">{submitError}</p>
+          ) : (
+            <ul className="mt-1.5 flex flex-col gap-1">
+              {Object.entries(errors).map(([key, message]) => (
+                <li key={key} className="text-[13px] text-destructive-red">
+                  <a href={`#field-${key}`} className="underline decoration-dotted">
+                    {message}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

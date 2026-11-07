@@ -1,16 +1,18 @@
-import { DELIVERY_ZONES, PRODUCTS, getZone } from "../data/catalog";
+import { getZone } from "../data/catalog";
 
-export function cartLines(cart) {
+// Источник товаров передаётся вызывающей стороной (supply.products из API);
+// PRODUCTS из data/catalog больше не источник корзины.
+export function cartLines(cart, products) {
   return Object.entries(cart)
     .map(([id, qty]) => {
-      const product = PRODUCTS.find((p) => p.id === Number(id));
+      const product = products.find((p) => p.id === Number(id));
       return product ? { product, qty } : null;
     })
     .filter(Boolean);
 }
 
-export function itemsTotal(cart) {
-  return cartLines(cart).reduce(
+export function itemsTotal(cart, products) {
+  return cartLines(cart, products).reduce(
     (sum, { product, qty }) => sum + product.price * qty,
     0,
   );
@@ -29,19 +31,9 @@ export function deliveryInfo(state) {
   return { mode: "manager", price: null, label: `${zone.name} — рассчитает менеджер` };
 }
 
-export function totalOf(state) {
-  const items = itemsTotal(state.cart);
-  const delivery = deliveryInfo(state);
-  return { items, delivery: delivery.price ?? 0, total: items + (delivery.price ?? 0) };
-}
-
 export function minOrderFor(zoneId) {
   const zone = getZone(zoneId);
   return zone?.minOrder ?? 0;
-}
-
-export function zoneOptions() {
-  return DELIVERY_ZONES;
 }
 
 export function isValidPhone(phone) {
