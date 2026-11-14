@@ -18,7 +18,7 @@ export default function IntroPage() {
     {
       Icon: TruckIcon,
       title: "Доставка на дом",
-      text: "Павлово, Тумботино, Ворсма, Богородск — по маршрутам и интервалам",
+      text: "Павлово, Тумботино, Ворсма, Сосновское — по маршрутам и интервалам",
       tone: "bg-accent-soft text-accent-dark",
     },
     {

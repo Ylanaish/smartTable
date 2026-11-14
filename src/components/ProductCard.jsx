@@ -46,9 +46,11 @@ export default function ProductCard({ product, qty = 0, onAdd, index = 0 }) {
             {[product.portion, product.origin].filter(Boolean).join(" · ") || product.description}
           </span>
           <span className="mt-1.5 flex items-center gap-2">
-            <span className="text-[14.5px] font-extrabold text-accent-strong tabular-nums">
-              {formatUnitPrice(product)}
-            </span>
+            {formatUnitPrice(product) && (
+              <span className="text-[14.5px] font-extrabold text-accent-strong tabular-nums">
+                {formatUnitPrice(product)}
+              </span>
+            )}
             {product.storage?.startsWith("заморозка") && (
               <span className="inline-flex items-center gap-1 rounded-full bg-canvas px-2 py-0.5 text-[10.5px] font-semibold text-muted">
                 <SnowflakeIcon className="h-3 w-3" /> заморозка
@@ -67,15 +69,17 @@ export default function ProductCard({ product, qty = 0, onAdd, index = 0 }) {
           <button
             type="button"
             onClick={open}
-            aria-label={`${product.name}: в корзине ${qty} ${unitLabel(product.unit)} за ${formatPrice(product.price * qty)}. Открыть товар`}
+            aria-label={`${product.name}: в корзине ${qty} ${unitLabel(product.unit)}${product.price > 0 ? ` за ${formatPrice(product.price * qty)}` : ""}. Открыть товар`}
             className="animate-pop flex min-w-[64px] flex-col items-center rounded-xl bg-sea px-3 py-1.5 text-white shadow-soft transition-transform active:scale-95"
           >
             <span className="text-[13px] leading-none font-bold tabular-nums">
               {qty} {unitLabel(product.unit)}
             </span>
-            <span className="mt-0.5 text-[11px] leading-none opacity-85 tabular-nums">
-              {formatPrice(product.price * qty)}
-            </span>
+            {product.price > 0 && (
+              <span className="mt-0.5 text-[11px] leading-none opacity-85 tabular-nums">
+                {formatPrice(product.price * qty)}
+              </span>
+            )}
           </button>
         ) : (
           <button

@@ -162,16 +162,16 @@ export default function ProductVisual({ product, size = "md", className = "" }) 
   const tile = TILE[product.category] ?? TILE.fish;
   const box = size === "lg" ? "h-44 w-full" : "h-16 w-16";
 
-  if (product.photo) {
+  if (product.photo && !/\.(mp4|webm|mov|m4v)(?:$|\?)/i.test(product.photo)) {
     return (
       <span
-        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-sea-soft ${box} ${className}`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-2xl ${box} ${className}`}
       >
         <img
           src={product.photo}
           alt={product.name}
           loading="lazy"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
         />
       </span>
     );

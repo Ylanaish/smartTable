@@ -12,9 +12,9 @@ import OrderRepository from "../repositories/orderRepository";
 import { useOrder } from "../hooks/useOrder";
 import { useSupply } from "../store/supplyContext";
 import { useTelegram } from "../hooks/useTelegram";
-import { isValidPhone, minOrderFor } from "../store/selectors";
+import { isValidPhone } from "../store/selectors";
 import { useOrders } from "../hooks/useOrders";
-import { AlertIcon, TruckIcon } from "../components/icons";
+import { AlertIcon } from "../components/icons";
 
 function normalizePhone(phone) {
   return `+${phone.replace(/\D/g, "")}`;
@@ -54,10 +54,8 @@ export default function CheckoutPage() {
 
   const itemsTotal = lines.reduce((sum, { product, qty }) => sum + product.price * qty, 0);
   const zone = getZone(order.zoneId);
-  const deliveryMode = zone?.mode ?? null;
-  const deliveryPrice = zone?.mode === "fixed" ? zone.price : 0;
-  const total = itemsTotal + deliveryPrice;
-  const minOrder = minOrderFor(order.zoneId);
+  const deliveryMode = zone?.type ?? null;
+  const total = itemsTotal;
 
   const setField = (field, value) => {
     dispatch({ type: "setField", field, value });
@@ -77,8 +75,6 @@ export default function CheckoutPage() {
     if (!order.street.trim()) next.street = "Укажите улицу";
     if (!order.house.trim()) next.house = "Укажите дом";
     if (!order.agreed) next.agreed = "Нужно согласие с условиями";
-    if (zone && itemsTotal < minOrder)
-      next.zoneId = `Минимальная сумма заказа для ${zone.name} — ${formatPrice(minOrder)}`;
     return next;
   };
 
@@ -115,9 +111,9 @@ export default function CheckoutPage() {
         type: "submit",
         items: snapshot,
         itemsTotal,
-        deliveryPrice: zone?.mode === "fixed" ? deliveryPrice : null,
+        deliveryPrice: 0,
         deliveryMode,
-        total: zone?.mode === "fixed" ? total : null,
+        total,
         orderNo: created.order_number,
       });
       // История заявок теперь живёт на сервере — обновляем её перезагрузкой.
@@ -237,18 +233,10 @@ export default function CheckoutPage() {
               <option value="">Выберите…</option>
               {DELIVERY_ZONES.map((z) => (
                 <option key={z.id} value={z.id}>
-                  {z.name}
-                  {z.mode === "fixed" ? ` — доставка ${z.price} ₽` : " — рассчитает менеджер"}
+                  {z.name} — {z.type === "pickup" ? "пункт выдачи" : "доставка"}
                 </option>
               ))}
             </select>
-            {zone?.mode === "manager" && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[12.5px] leading-snug font-medium text-ink-soft">
-                <TruckIcon className="mt-0.5 h-4 w-4 shrink-0 text-sea-deep" />
-                Стоимость и доступность доставки менеджер подтвердит по телефону до окончательного
-                подтверждения заявки.
-              </p>
-            )}
           </div>
 
           <div className="grid grid-cols-[1fr_90px] gap-2">
@@ -358,7 +346,7 @@ export default function CheckoutPage() {
                   {product.name} — {qty} {product.unit === "kg" ? "кг" : "шт/упак"}
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums">
-                  {formatPrice(product.price * qty)}
+                  {product.price > 0 && formatPrice(product.price * qty)}
                 </span>
               </li>
             ))}
@@ -369,20 +357,12 @@ export default function CheckoutPage() {
               <span className="tabular-nums">{formatPrice(itemsTotal)}</span>
             </div>
             <div className="flex justify-between text-muted">
-              <span>Доставка</span>
-              <span className="tabular-nums">
-                {zone
-                  ? zone.mode === "fixed"
-                    ? formatPrice(zone.price)
-                    : "рассчитает менеджер"
-                  : "—"}
-              </span>
+              <span>Стоимость доставки</span>
+              <span>входит в стоимость заказа</span>
             </div>
             <div className="flex justify-between text-[15px] font-bold text-ink">
               <span>Итого</span>
-              <span className="tabular-nums">
-                {zone?.mode === "fixed" ? formatPrice(total) : "уточнит менеджер"}
-              </span>
+              <span className="tabular-nums">{formatPrice(total)}</span>
             </div>
           </div>
         </section>

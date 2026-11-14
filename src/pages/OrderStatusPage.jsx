@@ -170,14 +170,14 @@ export default function OrderStatusPage() {
                 {item.product_title} — {item.quantity} {unitLabel(item.unit)}
               </span>
               <span className="shrink-0 font-bold tabular-nums text-ink">
-                {(item.price_per_unit * item.quantity).toLocaleString("ru-RU")} ₽
+                {item.price_per_unit > 0 && `${(item.price_per_unit * item.quantity).toLocaleString("ru-RU")} ₽`}
               </span>
             </li>
           ))}
         </ul>
         <div className="mt-3 border-t border-line pt-3 text-[14px] font-extrabold text-ink">
           Итого:{" "}
-          {order.total_amount != null
+          {order.total_amount
             ? `${order.total_amount.toLocaleString("ru-RU")} ₽`
             : "ожидает подтверждения менеджером"}
         </div>

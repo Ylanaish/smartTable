@@ -50,7 +50,7 @@ export default function CartPage() {
       footer={
         lines.length > 0 ? (
           <Button variant="accent" onClick={() => navigate("/checkout")}>
-            Оформить заявку · {formatPrice(total)}
+            Оформить заявку{total > 0 ? ` · ${formatPrice(total)}` : ""}
           </Button>
         ) : null
       }
@@ -79,12 +79,16 @@ export default function CartPage() {
                 <span className="block truncate text-[14px] font-bold text-ink">
                   {product.name}
                 </span>
-                <span className="mt-0.5 block text-[12px] text-muted">
-                  {formatPrice(product.price)} / {unitLabel(product.unit)}
-                </span>
-                <span className="mt-0.5 block text-[14px] font-extrabold text-accent-strong tabular-nums">
-                  {formatPrice(product.price * qty)}
-                </span>
+                {product.price > 0 && (
+                  <>
+                    <span className="mt-0.5 block text-[12px] text-muted">
+                      {formatPrice(product.price)} / {unitLabel(product.unit)}
+                    </span>
+                    <span className="mt-0.5 block text-[14px] font-extrabold text-accent-strong tabular-nums">
+                      {formatPrice(product.price * qty)}
+                    </span>
+                  </>
+                )}
               </span>
               <span className="flex shrink-0 items-center gap-2">
                 <button

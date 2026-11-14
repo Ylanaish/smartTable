@@ -126,12 +126,12 @@ export const PRODUCTS = [
   },
 ];
 
-// Зоны доставки: режим А — фиксированная цена, режим Б — менеджер рассчитает.
+// Направления получения заказа: доставка или пункт выдачи.
 export const DELIVERY_ZONES = [
-  { id: "pavlovo", name: "Павлово", mode: "fixed", price: 150, minOrder: 1500 },
-  { id: "tumbotino", name: "Тумботино", mode: "fixed", price: 200, minOrder: 2000 },
-  { id: "vorsma", name: "Ворсма", mode: "manager", price: null, minOrder: 2000 },
-  { id: "bogorodsk", name: "Богородск", mode: "manager", price: null, minOrder: 2500 },
+  { id: "pavlovo", name: "Павлово", type: "delivery" },
+  { id: "tumbotino", name: "Тумботино", type: "pickup" },
+  { id: "vorsma", name: "Ворсма", type: "delivery" },
+  { id: "sosnovskoe", name: "Сосновское", type: "delivery" },
 ];
 
 // Доступные интервалы доставки в дату привоза.
@@ -150,10 +150,13 @@ export function getZone(id) {
 }
 
 export function formatPrice(value) {
+  // 0 = цена скрыта (товар поштучно, цена за кг — в описании)
+  if (!value) return "по запросу";
   return `${value.toLocaleString("ru-RU")} ₽`;
 }
 
 export function formatUnitPrice(product) {
+  if (!product.price) return "";
   if (product.unit === "kg") return `${formatPrice(product.price)} / кг`;
   if (product.unit === "pc") return `${formatPrice(product.price)} / шт`;
   return `${formatPrice(product.price)} / упак.`;
@@ -161,6 +164,6 @@ export function formatUnitPrice(product) {
 
 export function unitLabel(unit) {
   if (unit === "kg") return "кг";
-  if (unit === "pc") return "шт";
+  if (unit === "pcs") return "шт";
   return "упак.";
 }

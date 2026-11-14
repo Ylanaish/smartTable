@@ -1,10 +1,10 @@
 import { apiFetch, API_BASE_URL } from "../api";
 
-// image_url у админа — это telegram file_id; картинки раздаёт публичный эндпоинт
+// Telegram file_id обслуживает публичный endpoint медиа.
 function mapPhoto(imageUrl) {
   if (!imageUrl) return null;
   if (imageUrl.startsWith("http")) return imageUrl;
-  return `${API_BASE_URL}/serviceDetails/product-image/${imageUrl}`;
+  return `${API_BASE_URL}/serviceDetails/media/${encodeURIComponent(imageUrl)}`;
 }
 
 // Нормализация товара API под форму карточек каталога (data/catalog.js)
@@ -15,6 +15,7 @@ function mapProduct(item) {
     name: item.title,
     description: item.description ?? null,
     photo: mapPhoto(item.image_url),
+    media: [item.image_url, ...(item.media_ids ?? [])].filter(Boolean).map(mapPhoto),
     emoji: null,
     unit: item.unit,
     portion: null,

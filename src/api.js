@@ -1,5 +1,9 @@
+// export const API_BASE_URL = (
+//   import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000"
+// ).replace(/\/$/, "");
+
 export const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000"
+  "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
 const TOKEN_KEY = "smarttable_access_token";
 
@@ -21,7 +25,8 @@ async function getToken(webApp, force = false) {
 
 export async function apiFetch(path, options = {}, webApp) {
   // let token = await getToken(webApp);
-  let token = "some-token-example";
+  let token = "";
+
   let response;
   console.log(API_BASE_URL);
 

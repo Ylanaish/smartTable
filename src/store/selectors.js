@@ -21,19 +21,11 @@ export function itemsTotal(cart, products) {
 export function deliveryInfo(state) {
   const zone = getZone(state.zoneId);
   if (!zone) return { mode: null, price: 0, label: "" };
-  if (zone.mode === "fixed") {
-    return {
-      mode: "fixed",
-      price: zone.price,
-      label: `${zone.name} — ${zone.price} ₽`,
-    };
-  }
-  return { mode: "manager", price: null, label: `${zone.name} — рассчитает менеджер` };
-}
-
-export function minOrderFor(zoneId) {
-  const zone = getZone(zoneId);
-  return zone?.minOrder ?? 0;
+  return {
+    mode: zone.type,
+    price: 0,
+    label: `${zone.name} — ${zone.type === "pickup" ? "пункт выдачи" : "доставка"}`,
+  };
 }
 
 export function isValidPhone(phone) {

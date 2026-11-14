@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import Button from "../components/Button";
-import ProductVisual from "../components/ProductVisual";
+import ProductMediaGallery from "../components/ProductMediaGallery";
 import { formatPrice, formatUnitPrice, unitLabel } from "../data/catalog";
 import { useSupply } from "../store/supplyContext";
 import { useOrder } from "../hooks/useOrder";
@@ -61,13 +61,13 @@ export default function ProductPage() {
       footer={
         product.available && qty > 0 ? (
           <Button variant="accent" onClick={() => navigate("/cart")}>
-            В корзину · {formatPrice(product.price * qty)}
+            В корзину{product.price > 0 ? ` · ${formatPrice(product.price * qty)}` : ""}
           </Button>
         ) : null
       }
     >
-      <div className="animate-fade-up mt-2 flex h-44 items-center justify-center rounded-card shadow-soft">
-        <ProductVisual product={product} size="lg" className="w-full rounded-card" />
+      <div className="animate-fade-up mt-2">
+        <ProductMediaGallery product={product} />
       </div>
 
       <div className="animate-fade-up" style={{ animationDelay: "70ms" }}>
@@ -76,9 +76,11 @@ export default function ProductPage() {
         </h1>
 
         <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-sea-soft px-3 py-1 text-[12px] font-bold text-sea-deep">
-            {formatUnitPrice(product)}
-          </span>
+          {formatUnitPrice(product) && (
+            <span className="rounded-full bg-sea-soft px-3 py-1 text-[12px] font-bold text-sea-deep">
+              {formatUnitPrice(product)}
+            </span>
+          )}
           {product.portion && (
             <span className="rounded-full bg-canvas px-3 py-1 text-[12px] font-semibold text-muted">
               {product.portion}
