@@ -10,5 +10,5 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
-  base: '/smartTable/'
+  base: process.env.VITE_BASE_PATH || '/smartTable'
 })
